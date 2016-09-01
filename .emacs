@@ -9,6 +9,7 @@
 ;;      - Finish CTags (compiler list dependencies, ctags tags file generation)
 ;;;     - Choose a color theme (high contrast vs low contrast)
 ;;;     - Emacs Latex, AUCTEX (https://www.gnu.org/software/auctex/)
+;;;       Prolly simple enough to just write latex-source in Emacs and view result in browser or something
 ;;;     - Emacs ORG Mode (http://orgmode.org/)
 ;;;       (http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html)
 ;;;       Color theme
@@ -20,6 +21,9 @@
 ;;;     - Easy find file in project (https://www.emacswiki.org/emacs/FindFileInProject)
 ;;;       Don't need to know where it is, just get it for me
 ;;;     - Git (https://www.emacswiki.org/emacs/Git)
+;;;       (https://www.emacswiki.org/emacs/Magit)
+;;;       (https://github.com/magit/magit)
+;;;       (https://magit.vc/)
 ;;;     - Emacs AutoComplete (emacs autocomplete)
 ;;;     - Python???
 ;;;     - Review this .emacs file with extra concern for memory consumption, and general performance
@@ -4662,7 +4666,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "a" 'other-window)
 (define-key evil-normal-state-map "Z" 'kill-this-buffer)
 (define-key evil-normal-state-map (kbd "C-¬") 'save-buffers-kill-terminal) ;; C-x C-c
-(define-key evil-normal-state-map "|" 'delete-other-windows)
+(define-key evil-normal-state-map "|" 'delete-window) ;; delete-other-windows
 
 ;; C-x C-z runs the command suspend-frame
 (global-unset-key (kbd "C-x C-z"))
