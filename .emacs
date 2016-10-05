@@ -6,7 +6,7 @@
 ;;===================================================================================================================================
 
 ;;; TODO(earl):
-;;      - Finish CTags (compiler list dependencies, ctags tags file generation)
+;;;     - Finish CTags (compiler list dependencies, ctags tags file generation)
 ;;;     - Choose a color theme (high contrast vs low contrast)
 ;;;     - Emacs Latex, AUCTEX (https://www.gnu.org/software/auctex/)
 ;;;       Prolly simple enough to just write latex-source in Emacs and view result in browser or something
@@ -562,28 +562,28 @@ See both toggle-frame-maximized and its following if statement."
                           '(
                             
                             ;; Valid hex number (will highlight invalid suffix though)
-                            ("\\b0x[[:xdigit:]]+[uUlL]*\\b" . font-lock-type-face)
+                            ("\\b0x[[:xdigit:]]+[uUlL]*\\b" . font-lock-constant-face)
                             
                             ;; Invalid hex number
                             ("\\b0x\\(\\w\\|\\.\\)+\\b" . font-lock-warning-face)
                             
                             ;; Valid floating point number.
-                            ("\\(\\b[0-9]+\\|\\)\\(\\.\\)\\([0-9]+\\(e[-]?[0-9]+\\)?\\([lL]?\\|[dD]?[fF]?\\)\\)\\b" (1 font-lock-type-face) (3 font-lock-type-face))
+                            ("\\(\\b[0-9]+\\|\\)\\(\\.\\)\\([0-9]+\\(e[-]?[0-9]+\\)?\\([lL]?\\|[dD]?[fF]?\\)\\)\\b" (1 font-lock-constant-face) (3 font-lock-constant-face))
                             
                             ;; ;; Invalid floating point number.  Must be before valid decimal.
                             ;; ("\\b[0-9].*?\\..+?\\b" . font-lock-warning-face)
                             
                             ;; Valid decimal number.  Must be before octal regexes otherwise 0 and 0l
                             ;; will be highlighted as errors.  Will highlight invalid suffix though.
-                            ("\\b\\(\\(0\\|[1-9][0-9]*\\)[uUlL]*\\)\\b" 1 font-lock-type-face)
+                            ("\\b\\(\\(0\\|[1-9][0-9]*\\)[uUlL]*\\)\\b" 1 font-lock-constant-face)
                             
                             ;; Valid octal number
-                            ("\\b0[0-7]+[uUlL]*\\b" . font-lock-type-face)
+                            ("\\b0[0-7]+[uUlL]*\\b" . font-lock-constant-face)
                             
                             ;; Floating point number with no digits after the period.  This must be
                             ;; after the invalid numbers, otherwise it will "steal" some invalid
                             ;; numbers and highlight them as valid.
-                            ("\\b\\([0-9]+\\)\\." (1 font-lock-type-face))
+                            ("\\b\\([0-9]+\\)\\." (1 font-lock-constant-face))
                             
                             ;; Invalid number.  Must be last so it only highlights anything not
                             ;; matched above.
@@ -644,12 +644,12 @@ See both toggle-frame-maximized and its following if statement."
 
 ;;==============================================================================================================
 ;;
-;; Earl's dark theme
+;; Themes
 ;;
 ;;**************************************************************************************************************
 
-(defun earl-dark-theme ()
-  "Dark theme"
+(defun casey-dark-theme ()
+  "Handmade Hero Theme"
   (interactive)
   
   ;; Color variables
@@ -701,6 +701,7 @@ See both toggle-frame-maximized and its following if statement."
   ;; Misc stuff
   (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
   (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
   (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
@@ -721,69 +722,73 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's light theme
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-theme ()
-  "Light theme"
+(defun casey-dark-theme-colorful ()
+  "Colorful Handmade Hero Theme"
   (interactive)
   
   ;; Color variables
   ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base02)
-  (setq earl-color-comment earl-color-sol-base00)
-  (setq earl-color-string earl-color-sol-green)
-  (setq earl-color-keyword earl-color-sol-red)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-cursor "#000000")
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-emphasized earl-color-text)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-yellow)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-green)
+  (setq earl-color-text "burlywood3")
+  (setq earl-color-comment "gray75")
+  (setq earl-color-string "#81B419")
+  (setq earl-color-keyword "DarkGoldenrod3")
+  (setq earl-color-type earl-color-keyword)
+  (setq earl-color-background "#161616") ;; "#292929", "#161616", "#0C0C0C"
+  (setq earl-color-cursor "#40FF40")
+  (setq earl-color-hl-line "midnight blue") ;; "midnight blue", "#161616", "#194545"
+  (setq earl-color-emphasized "#ffffff")
+  (setq earl-color-todo "Red")
+  (setq earl-color-study "Yellow")
+  (setq earl-color-important "Yellow")
+  (setq earl-color-note "Light Green")
+  (setq earl-color-region "#194545")
+  (setq earl-color-background-insert "#974325")
+  (setq earl-color-cursor-insert "#FF0002")
+  (setq earl-color-custom01 "#466B6B")
   
-  ;; Line highlighting, selection highlighting
+  ;; Line highlighting and selection highlighting
   (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
+  (set-face-background 'region earl-color-region)
   
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
+  ;; Matching parentheses highlighting
+  ;; (set-face-background 'show-paren-match (face-background 'default)) ;; 'default, 'region, 'highlight
+  (set-face-background 'show-paren-match earl-color-background)
+  (set-face-foreground 'show-paren-match earl-color-emphasized)
+  ;; (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+  (set-face-background 'show-paren-mismatch earl-color-keyword)
+  (set-face-foreground 'show-paren-mismatch earl-color-emphasized)
   
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
+  ;;; IDO-color-configuration (affects mainly the MINIBUFFER)
   (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
+  (set-face-attribute 'ido-first-match nil :foreground earl-color-keyword)
+  (set-face-attribute 'ido-only-match nil :foreground earl-color-string)
   (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
   (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
   
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
+  ;;; isearch
+  (set-face-background 'isearch earl-color-string)
+  (set-face-foreground 'isearch earl-color-emphasized)
+  (set-face-background 'lazy-highlight earl-color-custom01)
+  (set-face-foreground 'lazy-highlight earl-color-emphasized)
+  ;; (custom-set-faces '(isearch-fail ((((class color)) (:background "#8B0000")))))
+  ;; (setq lazy-highlight-cleanup nil)
   
   ;; Misc stuff
   (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-text)
+  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-type)
   (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
   (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
   (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-keyword)
+  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
-  
+  ;; (set-face-attribute 'default nil :weight 'bold) ;; bold text
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
+  (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
@@ -791,12 +796,6 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
-
-;;==============================================================================================================
-;;
-;; Earl's gray theme
-;;
-;;**************************************************************************************************************
 
 (defun earl-gray-theme ()
   "Gray theme"
@@ -872,12 +871,6 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's white theme
-;;
-;;**************************************************************************************************************
-
 (defun earl-white-theme ()
   "White theme"
   (interactive)
@@ -951,178 +944,8 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's light sol theme
-;;
-;;**************************************************************************************************************
-
 (defun earl-light-sol-theme ()
   "Light sol theme"
-  (interactive)
-  
-  ;; Default light-sol-values
-  ;; earl-color-sol-base01 - emphasized content
-  ;; earl-color-sol-base00 - body text
-  ;; earl-color-sol-base1  - comments
-  ;; earl-color-sol-base2  - background highlights
-  ;; earl-color-sol-base3  - background
-  
-  ;; Color variables
-  ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base00)
-  (setq earl-color-comment earl-color-sol-base1)
-  (setq earl-color-string earl-color-sol-blue)
-  (setq earl-color-keyword earl-color-sol-orange)
-  (setq earl-color-emphasized earl-color-sol-base01)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-green)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
-  
-  ;; Line highlighting, selection highlighting
-  (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
-  
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
-  
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
-  (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
-  (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
-  (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
-  
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
-  
-  ;; Compilation
-  (set-face-foreground 'compilation-error earl-color-sol-red)
-  (set-face-foreground 'compilation-info earl-color-sol-green)
-  
-  ;; Misc stuff
-  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-sol-green)
-  (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
-  
-  (set-foreground-color earl-color-text)
-  (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
-  (set-cursor-color earl-color-cursor)
-  
-  (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
-  (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
-  (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
-  (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
-  )
-
-;;==============================================================================================================
-;;
-;; Earl's light sol theme with stronger contrast
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-contrast ()
-  "Light sol theme with stronger contrast"
-  (interactive)
-  
-  ;; Default light-sol-values
-  ;; earl-color-sol-base01 - emphasized content
-  ;; earl-color-sol-base00 - body text
-  ;; earl-color-sol-base1  - comments
-  ;; earl-color-sol-base2  - background highlights
-  ;; earl-color-sol-base3  - background
-  
-  ;; Color variables
-  ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base02)
-  (setq earl-color-comment earl-color-sol-base00)
-  (setq earl-color-string earl-color-sol-blue)
-  (setq earl-color-keyword earl-color-sol-orange)
-  (setq earl-color-emphasized earl-color-sol-base03)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-green)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
-  
-  ;; Line highlighting, selection highlighting
-  (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
-  
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
-  
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
-  (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
-  (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
-  (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
-  
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
-  
-  ;; Compilation
-  (set-face-foreground 'compilation-error earl-color-sol-red)
-  (set-face-foreground 'compilation-info earl-color-sol-green)
-  
-  ;; Misc stuff
-  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-sol-green)
-  (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
-  
-  (set-foreground-color earl-color-text)
-  (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
-  (set-cursor-color earl-color-cursor)
-  
-  (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
-  (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
-  (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
-  (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
-  )
-
-;;==============================================================================================================
-;;
-;; Earl's colorful light sol theme
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-colorful ()
-  "Colorful light sol theme"
   (interactive)
   
   ;; Default light-sol-values
@@ -1203,14 +1026,8 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's colorful light sol theme with stronger contrast
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-colorful-contrast ()
-  "Colorful light sol theme with stronger contrast"
+(defun earl-light-sol-theme-contrast ()
+  "Light sol theme with stronger contrast"
   (interactive)
   
   ;; Default light-sol-values
@@ -1292,186 +1109,6 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's secondary colorful light sol theme
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-colorful-secondary ()
-  "Secondary Colorful light sol theme"
-  (interactive)
-  
-  ;; Default light-sol-values
-  ;; earl-color-sol-base01 - emphasized content
-  ;; earl-color-sol-base00 - body text
-  ;; earl-color-sol-base1  - comments
-  ;; earl-color-sol-base2  - background highlights
-  ;; earl-color-sol-base3  - background
-  
-  ;; Color variables
-  ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base00)
-  (setq earl-color-comment earl-color-sol-green)
-  (setq earl-color-type earl-color-sol-blue)
-  (setq earl-color-string earl-color-sol-cyan)
-  (setq earl-color-keyword earl-color-sol-orange)
-  (setq earl-color-emphasized earl-color-sol-base01)
-  (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-yellow)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
-  
-  ;; Line highlighting, selection highlighting
-  (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
-  
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
-  
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
-  (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
-  (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
-  (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
-  
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
-  
-  ;; Compilation
-  (set-face-foreground 'compilation-error earl-color-sol-red)
-  (set-face-foreground 'compilation-info earl-color-sol-green)
-  
-  ;; Misc stuff
-  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-negation-char-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
-  (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
-  
-  (set-foreground-color earl-color-text)
-  (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
-  (set-cursor-color earl-color-cursor)
-  
-  (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
-  (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
-  (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
-  (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
-  )
-
-;;==============================================================================================================
-;;
-;; Earl's secondary colorful light sol theme with stronger contrast
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-colorful-secondary-contrast ()
-  "Secondary Colorful light sol theme with stronger contrast"
-  (interactive)
-  
-  ;; Default light-sol-values
-  ;; earl-color-sol-base01 - emphasized content
-  ;; earl-color-sol-base00 - body text
-  ;; earl-color-sol-base1  - comments
-  ;; earl-color-sol-base2  - background highlights
-  ;; earl-color-sol-base3  - background
-  
-  ;; Color variables
-  ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base02)
-  (setq earl-color-comment earl-color-sol-green)
-  (setq earl-color-type earl-color-sol-blue)
-  (setq earl-color-string earl-color-sol-cyan)
-  (setq earl-color-keyword earl-color-sol-orange)
-  (setq earl-color-emphasized earl-color-sol-base03)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-yellow)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
-  
-  ;; Line highlighting, selection highlighting
-  (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
-  
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
-  
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
-  (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
-  (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
-  (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
-  
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
-  
-  ;; Compilation
-  (set-face-foreground 'compilation-error earl-color-sol-red)
-  (set-face-foreground 'compilation-info earl-color-sol-green)
-  
-  ;; Misc stuff
-  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-negation-char-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
-  (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
-  
-  (set-foreground-color earl-color-text)
-  (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
-  (set-cursor-color earl-color-cursor)
-  
-  (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
-  (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
-  (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
-  (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
-  )
-
-;;==============================================================================================================
-;;
-;; Earl's dark sol theme
-;;
-;;**************************************************************************************************************
-
 (defun earl-dark-sol-theme ()
   "Dark sol theme"
   (interactive)
@@ -1544,12 +1181,6 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's colorful dark sol theme
-;;
-;;**************************************************************************************************************
-
 (defun earl-dark-sol-theme-colorful ()
   "Colorful Dark sol theme"
   (interactive)
@@ -1603,7 +1234,7 @@ See both toggle-frame-maximized and its following if statement."
   ;; Misc stuff
   (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-text)
+  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-type)
   (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
   (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
@@ -1623,172 +1254,73 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;==============================================================================================================
-;;
-;; Earl's simple light sol theme
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-simple ()
-  "Simple light sol theme"
+(defun jblow-dark-theme ()
+  "Jonathan Blow's theme"
   (interactive)
-  
-  ;; Default light-sol-values
-  ;; earl-color-sol-base01 - emphasized content
-  ;; earl-color-sol-base00 - body text
-  ;; earl-color-sol-base1  - comments
-  ;; earl-color-sol-base2  - background highlights
-  ;; earl-color-sol-base3  - background
   
   ;; Color variables
   ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base00)
-  (setq earl-color-comment earl-color-sol-base1)
-  (setq earl-color-type earl-color-text)
-  (setq earl-color-string earl-color-text)
-  (setq earl-color-keyword earl-color-text)
-  (setq earl-color-emphasized earl-color-sol-base01)
-  (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-yellow)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
+  (setq earl-color-text "#C4B19C")
+  (setq earl-color-comment "#F3F843")
+  (setq earl-color-string "#B3B2B3")
+  (setq earl-color-keyword "#FFFFFF")
+  (setq earl-color-background "#2A282A") ;; "#292929", "#161616", "#0C0C0C"
+  (setq earl-color-cursor "#8FED90")
+  (setq earl-color-hl-line "#1B1A1C") ;; earl-color-background, "#393638", "#1B1A1C", "#161616"
+  (setq earl-color-emphasized earl-color-keyword)
+  (setq earl-color-todo "Red")
+  (setq earl-color-study "Cyan")
+  (setq earl-color-important "White")
+  (setq earl-color-note "Light Green")
+  (setq earl-color-region "#194545")
+  (setq earl-color-background-insert "#974325")
+  (setq earl-color-cursor-insert "#FF0002")
+  (setq earl-color-custom01 "#466B6B")
+  (setq earl-color-constant "#8BF4D8")
   
-  ;; Line highlighting, selection highlighting
+  ;; Line highlighting and selection highlighting
   (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
+  (set-face-background 'region earl-color-region)
   
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
+  ;; Matching parentheses highlighting
+  ;; (set-face-background 'show-paren-match (face-background 'default)) ;; 'default, 'region, 'highlight
+  (set-face-background 'show-paren-match earl-color-background)
+  (set-face-foreground 'show-paren-match earl-color-emphasized)
+  ;; (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+  (set-face-background 'show-paren-mismatch earl-color-keyword)
+  (set-face-foreground 'show-paren-mismatch earl-color-emphasized)
   
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
+  ;;; IDO-color-configuration (affects mainly the MINIBUFFER)
   (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
+  (set-face-attribute 'ido-first-match nil :foreground earl-color-keyword)
+  (set-face-attribute 'ido-only-match nil :foreground earl-color-string)
   (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
   (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
   
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
-  
-  ;; Compilation
-  (set-face-foreground 'compilation-error earl-color-sol-red)
-  (set-face-foreground 'compilation-info earl-color-sol-green)
+  ;;; isearch
+  (set-face-background 'isearch earl-color-string)
+  (set-face-foreground 'isearch earl-color-emphasized)
+  (set-face-background 'lazy-highlight earl-color-custom01)
+  (set-face-foreground 'lazy-highlight earl-color-emphasized)
+  ;; (custom-set-faces '(isearch-fail ((((class color)) (:background "#8B0000")))))
+  ;; (setq lazy-highlight-cleanup nil)
   
   ;; Misc stuff
-  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-string)
+  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-constant) ;; earl-color-text
   (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
   (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-negation-char-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
   (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
+  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-cursor) ;; earl-color-keyword, earl-color-text
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
-  
+  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-cursor) ;; earl-color-keyword
+  ;; (set-face-attribute 'default nil :weight 'bold) ;; bold text
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
-  (set-cursor-color earl-color-cursor)
-  
-  (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
-  (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
-  (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
-  (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
-  )
-
-;;==============================================================================================================
-;;
-;; Earl's simple light sol theme contrast
-;;
-;;**************************************************************************************************************
-
-(defun earl-light-sol-theme-simple-contrast ()
-  "Simple light sol theme contrast"
-  (interactive)
-  
-  ;; Default light-sol-values
-  ;; earl-color-sol-base01 - emphasized content
-  ;; earl-color-sol-base00 - body text
-  ;; earl-color-sol-base1  - comments
-  ;; earl-color-sol-base2  - background highlights
-  ;; earl-color-sol-base3  - background
-  
-  ;; Color variables
-  ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base02)
-  (setq earl-color-comment earl-color-sol-base00)
-  (setq earl-color-type earl-color-text)
-  (setq earl-color-string earl-color-text)
-  (setq earl-color-keyword earl-color-text)
-  (setq earl-color-emphasized earl-color-sol-base03)  
-  (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-yellow)
-  (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
-  
-  ;; Line highlighting, selection highlighting
-  (set-face-background 'hl-line earl-color-hl-line)
-  (set-face-background 'region earl-color-light-background)
-  
-  ;; Matching parentheses highlightning
-  (set-face-background 'show-paren-match "#92D4FF")
-  (set-face-foreground 'show-paren-match "#ffffff")
-  (set-face-background 'show-paren-mismatch earl-color-sol-red)
-  (set-face-foreground 'show-paren-mismatch "#ffffff")
-  
-  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
-  (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
-  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
-  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
-  (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
-  (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
-  
-  ;; isearch
-  (set-face-background 'isearch earl-color-sol-green)
-  (set-face-foreground 'isearch "#ffffff")
-  (set-face-background 'lazy-highlight "#82C4D5")
-  (set-face-foreground 'lazy-highlight "#ffffff")
-  
-  ;; Compilation
-  (set-face-foreground 'compilation-error earl-color-sol-red)
-  (set-face-foreground 'compilation-info earl-color-sol-green)
-  
-  ;; Misc stuff
-  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
-  (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-negation-char-face nil :foreground earl-color-text)
-  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
-  (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
-  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
-  (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
-  ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
-  
-  (set-foreground-color earl-color-text)
-  (set-background-color earl-color-background)
-  (set-face-background 'fringe earl-color-hl-line)
+  (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
@@ -1799,23 +1331,18 @@ See both toggle-frame-maximized and its following if statement."
 
 ;;********************************************************************************************************************************
 ;;
-;;                                              Dynamically change the theme
+;; Dynamically change the theme
 ;;
 ;;================================================================================================================================
 
-(setq earl-theme-list (list 'earl-dark-theme 'earl-dark-sol-theme 'earl-dark-sol-theme-colorful
-                            'earl-gray-theme 'earl-light-theme 'earl-white-theme
-                            'earl-light-sol-theme
-                            'earl-light-sol-theme-contrast
-                            'earl-light-sol-theme-colorful
-                            'earl-light-sol-theme-colorful-contrast
-                            'earl-light-sol-theme-colorful-secondary
-                            'earl-light-sol-theme-colorful-secondary-contrast
-                            'earl-light-sol-theme-simple
-                            'earl-light-sol-theme-simple-contrast))
+(setq earl-theme-list (list 'casey-dark-theme 'casey-dark-theme-colorful
+                            'earl-gray-theme 'earl-white-theme
+                            'earl-light-sol-theme 'earl-light-sol-theme-contrast
+                            'earl-dark-sol-theme 'earl-dark-sol-theme-colorful
+                            'jblow-dark-theme))
 
-(setq earl-last-theme-index 13)
-(setq earl-default-theme 9)
+(setq earl-last-theme-index 8)
+(setq earl-default-theme 5)
 (setq earl-current-theme earl-default-theme)
 
 (defun earl-current-theme ()
@@ -1844,7 +1371,7 @@ See both toggle-frame-maximized and its following if statement."
 
 ;;********************************************************************************************************************************
 ;;
-;;                                                    Post load stuff
+;; Post load stuff
 ;;
 ;;================================================================================================================================
 
