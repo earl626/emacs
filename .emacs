@@ -648,6 +648,27 @@ See both toggle-frame-maximized and its following if statement."
 ;;
 ;;**************************************************************************************************************
 
+(defun earl-set-light-sol-background ()
+  "Light sol background"
+  (interactive)
+  (set-face-background 'hl-line earl-color-sol-base2)
+  (set-background-color earl-color-sol-base3)
+  (set-face-background 'fringe earl-color-sol-base3))
+
+(defun earl-set-gray-background ()
+  "Gray background"
+  (interactive)
+  (set-face-background 'hl-line earl-color-sol-base3)
+  (set-background-color earl-color-light-background)
+  (set-face-background 'fringe earl-color-light-background))
+
+(defun earl-set-light-sol-inverted-background ()
+  "Light sol inverted background"
+  (interactive)
+  (set-face-background 'hl-line earl-color-sol-base3)
+  (set-background-color earl-color-sol-base2)
+  (set-face-background 'fringe earl-color-sol-base2))
+
 (defun casey-dark-theme ()
   "Handmade Hero Theme"
   (interactive)
