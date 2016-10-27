@@ -31,7 +31,6 @@
 ;;;     - Verify that indentation is working as intended
 ;;;     - Review this .emacs file with extra concern for memory consumption, and general performance
 ;;;       See if you can get Emacs down to 14 MB memory consumption before loading any tag-files
-;;;       Emacs lags when scrolling through a section at the bottom of this file
 ;;;     - Creates something that parses the Emacs-configuration-file and manipulates it
 ;;;       Like something that asks the user to store something the user has given it for future session
 ;;;       If yes it locates the config-file (.emacs), if no previous entries creates a new list with unique
@@ -4033,6 +4032,22 @@ is called as a function to find the defun's end."
 (evil-define-key 'insert help-mode-map (kbd "<tab>") 'forward-button)
 (evil-define-key 'normal help-mode-map (kbd "<S-tab>") 'backward-button)
 (evil-define-key 'insert help-mode-map (kbd "<S-tab>") 'backward-button)
+
+;;**************************************************************
+;;
+;; Python
+;;
+;;**************************************************************
+
+(defun earl-python-mode-hook ()
+  ;; Make Enter indent for you
+  (define-key evil-normal-state-local-map [return] 'earl-newline-and-indent)
+  (define-key evil-insert-state-local-map [return] 'earl-newline-and-indent)
+  
+  (setq earl-close-compile-buffer-automatically t)
+  (setq earl-build-tags-file-after-successful-compilation nil))
+
+(add-hook 'python-mode-hook 'earl-python-mode-hook)
 
 ;;***********************************************************************************************************************************
 ;;
