@@ -4044,8 +4044,9 @@ is called as a function to find the defun's end."
   (define-key evil-normal-state-local-map [return] 'earl-newline-and-indent)
   (define-key evil-insert-state-local-map [return] 'earl-newline-and-indent)
   
-  (setq earl-close-compile-buffer-automatically t)
-  (setq earl-build-tags-file-after-successful-compilation nil))
+  (setq earl-close-compile-buffer-automatically nil)
+  (setq earl-build-tags-file-after-successful-compilation nil)
+  (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point))
 
 (add-hook 'python-mode-hook 'earl-python-mode-hook)
 
