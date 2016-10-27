@@ -10,6 +10,7 @@
 ;;;     - Choose a color theme (high contrast vs low contrast)
 ;;;     - Emacs Latex, AUCTEX (https://www.gnu.org/software/auctex/)
 ;;;       Prolly simple enough to just write latex-source in Emacs and view result in browser or something
+;;;       Improve general editting, indentation, etc...
 ;;;     - Emacs ORG Mode (http://orgmode.org/)
 ;;;       (http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html)
 ;;;       Color theme
@@ -24,8 +25,10 @@
 ;;;       (https://www.emacswiki.org/emacs/Magit)
 ;;;       (https://github.com/magit/magit)
 ;;;       (https://magit.vc/)
-;;;     - Emacs AutoComplete (emacs autocomplete)
+;;;     - Emacs AutoComplete (emacs autocomplete, dropdownlist)
 ;;;     - Python???
+;;;     - See if you can optimize previous-blank-line and next-blank-line
+;;;     - Verify that indentation is working as intended
 ;;;     - Review this .emacs file with extra concern for memory consumption, and general performance
 ;;;       See if you can get Emacs down to 14 MB memory consumption before loading any tag-files
 ;;;       Emacs lags when scrolling through a section at the bottom of this file
@@ -48,7 +51,6 @@
 ;;;     - F1       = help/documentation
 ;;;     - F1 f/v/k = help function/variable/key sequence respectively
 ;;;     - F1 ?     = further options
-;;;     - Useful emacs functions: print and message
 
 ;;; IMPORTANT(earl):
 ;;;     - I don't think this fully applies anymore... but I donno... :P
@@ -59,6 +61,12 @@
 ;;;     - Key configurations ment for Evil mode should all be marked "Evil key configuration"
 ;;;     - Other configurations ment for Evil Mode should all be marked "Evil Mode"
 ;;;     - Other configurations that are not marked should not be touched unless you know what you are doing
+
+;;; NOTE(earl): List of useful functions
+;;;     - (print OBJECT &optional PRINTCHARFUN)
+;;;     - (message FORMAT-STRING &rest ARGS)
+;;;     - (count-lines START END)
+;;;     - (push-mark &optional LOCATION NOMSG ACTIVATE), (pop-mark)
 
 ;;***********************************************************************************************************************************
 ;;
@@ -1400,8 +1408,8 @@ See both toggle-frame-maximized and its following if statement."
   (interactive)
   ;; (maximize-frame)
   
-  ;; Fullscreen
-  (toggle-frame-fullscreen) ;; Makes Emacs fullscreen (F11), (toggle-frame-maximized), (maximize-frame)
+  ;; ;; Fullscreen
+  ;; (toggle-frame-fullscreen) ;; Makes Emacs fullscreen (F11), (toggle-frame-maximized), (maximize-frame)
   
   ;;; Default Theme
   (funcall (nth earl-default-theme earl-theme-list))
@@ -2727,6 +2735,17 @@ doc string for `insert-for-yank-1', which see."
     (let ((relative-file-name (nth (- (length full-path-list) 1) full-path-list)))
       (write-region nil nil (concat "~/" relative-file-name)))))
 
+;; ;; You can disable messages by setting the command-error-function to a function
+;; ;; that ignores signals (buffer-read-only, beginning-of-buffer, end-of-buffer, etc.)
+;; (defun earl-command-error-function (data context caller)
+;;   "Ignore the buffer-read-only, beginning-of-buffer,
+;; end-of-buffer signals; pass the rest to the default handler."
+;;   (when (not (memq (car data) '(buffer-read-only
+;;                                 beginning-of-buffer
+;;                                 end-of-buffer)))
+;;     (command-error-default-function data context caller)))
+;; (setq command-error-function #'earl-command-error-function)
+
 ;;**************************************************************
 ;;
 ;; Delete, Kill, Cut, Copy, Paste, Yank
@@ -2816,13 +2835,6 @@ even beep.)"
   (if (bolp)
       (backward-delete-char-untabify 1)
     (delete-line 0)))
-
-;; Testing on some wordsTesting on some wordsTesting on some wordsTesting on some words
-;; Testing on some wordsTesting on some wordsTesting on some wordsTesting on some words
-;; Testing on some wordsTesting on some wordsTesting on some wordsTesting on some words
-;; Testing on some wordsTesting on some wordsTesting on some wordsTesting on some words
-;; Testing on some wordsTesting on some wordsTesting on some wordsTesting on some words
-;; Testing on some wordsTesting on some wordsTesting on some wordsTesting on some words
 
 ;;**************************************************************
 ;;
@@ -2973,6 +2985,106 @@ column to indent to; if it is nil, use one of the three methods above."
   ;; leave it unmodified, in which case we have to deactivate the mark
   ;; by hand.
   (deactivate-mark))
+
+(defun earl-beginning-of-defun (&optional arg)
+  (interactive "^p")
+  (or (not (eq this-command 'beginning-of-defun))
+      (eq last-command 'beginning-of-defun)
+      (and transient-mark-mode mark-active))
+  (and (beginning-of-defun-raw arg)
+       (progn (beginning-of-line) t)))
+
+(defun earl-end-of-defun (&optional arg)
+  "Move forward to next end of defun.
+With argument, do it that many times.
+Negative argument -N means move back to Nth preceding end of defun.
+
+An end of a defun occurs right after the close-parenthesis that
+matches the open-parenthesis that starts a defun; see function
+`beginning-of-defun'.
+
+If variable `end-of-defun-function' is non-nil, its value
+is called as a function to find the defun's end."
+  (interactive "^p")
+  (or (not (eq this-command 'end-of-defun))
+      (eq last-command 'end-of-defun)
+      (and transient-mark-mode mark-active))
+  (if (or (null arg) (= arg 0)) (setq arg 1))
+  (let ((pos (point))
+        (beg (progn (end-of-line 1) (beginning-of-defun-raw 1) (point)))
+	(skip (lambda ()
+		;; When comparing point against pos, we want to consider that if
+		;; point was right after the end of the function, it's still
+		;; considered as "in that function".
+		;; E.g. `eval-defun' from right after the last close-paren.
+		(unless (bolp)
+		  (skip-chars-forward " \t")
+		  (if (looking-at "\\s<\\|\n")
+		      (forward-line 1))))))
+    (funcall end-of-defun-function)
+    (funcall skip)
+    (cond
+     ((> arg 0)
+      ;; Moving forward.
+      (if (> (point) pos)
+          ;; We already moved forward by one because we started from
+          ;; within a function.
+          (setq arg (1- arg))
+        ;; We started from after the end of the previous function.
+        (goto-char pos))
+      (unless (zerop arg)
+        (beginning-of-defun-raw (- arg))
+        (funcall end-of-defun-function)))
+     ((< arg 0)
+      ;; Moving backward.
+      (if (< (point) pos)
+          ;; We already moved backward because we started from between
+          ;; two functions.
+          (setq arg (1+ arg))
+        ;; We started from inside a function.
+        (goto-char beg))
+      (unless (zerop arg)
+        (beginning-of-defun-raw (- arg))
+	(setq beg (point))
+        (funcall end-of-defun-function))))
+    (funcall skip)
+    (while (and (< arg 0) (>= (point) pos))
+      ;; We intended to move backward, but this ended up not doing so:
+      ;; Try harder!
+      (goto-char beg)
+      (beginning-of-defun-raw (- arg))
+      (if (>= (point) beg)
+	  (setq arg 0)
+	(setq beg (point))
+        (funcall end-of-defun-function)
+	(funcall skip)))))
+
+(defun earl-auto-indent-around-point ()
+  "Automatic indentation of code around point"
+  (interactive)
+  (let ((pt (point))
+        (nlines 64))
+    (ignore-errors ;; Ignores the Beginning of buffer error
+      (beginning-of-line)(previous-line nlines))
+    (let ((start (point)))
+      (goto-char pt)
+      (ignore-errors ;; Ignores the End of buffer error
+        (next-line nlines)(end-of-line))
+      (let ((end (point)))
+        (goto-char pt)
+        (indent-region start end)))))
+
+(defun earl-auto-indent-function ()
+  "Automatically indents the function that the point is currently in. If point is not inside a function,
+   then indents from start of first function above point, or point-min if no such function exits,
+   and all the way to the end of a function after point, or point-max if no such function exits."
+  (interactive)
+  (let ((pt (point)))
+    (earl-beginning-of-defun)
+    (let ((start (point)))
+      (goto-char pt) (earl-end-of-defun)
+      (let ((end (point)))
+        (goto-char pt) (indent-region start end)))))
 
 ;;**************************************************************
 ;;
@@ -4133,9 +4245,9 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "'" 'forward-or-backward-sexp) ;; Go to the matching parenthesis character if one is adjacent to point.
 (define-key evil-normal-state-map "[" 'search-move-backward-paren-opening-and-closing)
 (define-key evil-normal-state-map "]" 'search-move-forward-paren-opening-and-closing)
-(define-key evil-normal-state-map "{" 'beginning-of-defun)
-(define-key evil-normal-state-map "}" 'end-of-defun)
-(define-key evil-normal-state-map "*" 'backward-up-list)
+(define-key evil-normal-state-map "{" 'earl-beginning-of-defun)
+(define-key evil-normal-state-map "}" 'earl-end-of-defun)
+(define-key evil-normal-state-map "(" 'backward-up-list)
 (define-key evil-normal-state-map "<" '(lambda () (interactive) (goto-char (point-min)))) ;; beginning-of-buffer
 (define-key evil-normal-state-map ">" '(lambda () (interactive) (goto-char (point-max)))) ;; end-of-buffer
 
@@ -4251,7 +4363,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;;
 ;;*****************************************
 
-;; (define-key evil-normal-state-map "(" 'electric-pair-mode) ;; Toggle Auto Paren mode on and off. Probably don't need it...
+;; (define-key evil-normal-state-map "^" 'electric-pair-mode) ;; Toggle Auto Paren mode on and off. Probably don't need it...
 
 (define-key evil-normal-state-map "\\" 'quick-calc)
 (define-key evil-normal-state-map "z" 'grep)
@@ -4328,6 +4440,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "," 'newline-and-indent)
 (define-key evil-normal-state-map "." 'open-line)
 
+(define-key evil-normal-state-map "*" 'earl-auto-indent-function)
 (define-key evil-insert-state-map "   " 'dabbrev-expand)
 (define-key evil-insert-state-map "\t" 'dabbrev-expand)
 (define-key evil-normal-state-map "\t" 'indent-region)
