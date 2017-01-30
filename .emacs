@@ -4050,6 +4050,24 @@ is called as a function to find the defun's end."
 
 (add-hook 'python-mode-hook 'earl-python-mode-hook)
 
+;;**************************************************************
+;;
+;; Auto Revert, Auto Update, Auto Refresh, Auto Reload
+;;
+;; Automatically update buffers whose files
+;; have been modified in another program
+;;
+;;**************************************************************
+
+(global-auto-revert-mode t)
+(setq auto-revert-interval 1) ;; Default check is 5 seconds
+(auto-revert-set-timer)
+
+;; All the "reverting buffer foo" messages are _really_ distracting.
+(setq auto-revert-verbose nil)
+
+(setq global-auto-revert-non-file-buffers t)
+
 ;;***********************************************************************************************************************************
 ;;
 ;;                                                     Evil Mode
