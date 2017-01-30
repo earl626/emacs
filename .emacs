@@ -1951,10 +1951,10 @@ See both toggle-frame-maximized and its following if statement."
   ;;
   ;;****************************
   
-  ;; Autofill comments
-  (setq-local comment-auto-fill-only-comments t)
-  (setq-default fill-column 120)
-  (auto-fill-mode 1)
+  ;; ;; Autofill comments (fucks up regular code...)
+  ;; (setq-local comment-auto-fill-only-comments t)
+  ;; (setq-default fill-column 120)
+  ;; (auto-fill-mode 1)
   
   ;; Configure the mode line
   (setq-local mode-line-format '("%e" mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position evil-mode-line-tag
