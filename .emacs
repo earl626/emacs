@@ -4516,6 +4516,14 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map [f8] (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
 (define-key evil-insert-state-map [f8] (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
 
+(global-set-key (kbd "<f9>") (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
+(define-key evil-normal-state-map [f9] (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
+(define-key evil-insert-state-map [f9] (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
+
+(global-set-key (kbd "<f10>") (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
+(define-key evil-normal-state-map [f10] (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
+(define-key evil-insert-state-map [f10] (lambda () (interactive) (if (eq earl-caps-lock 1) (setq earl-caps-lock 0) (setq earl-caps-lock 1))))
+
 (define-key evil-insert-state-map "q" (lambda () (interactive) (if (eq earl-caps-lock 1) (insert "Q") (insert "q"))))
 (define-key evil-insert-state-map "w" (lambda () (interactive) (if (eq earl-caps-lock 1) (insert "W") (insert "w"))))
 (define-key evil-insert-state-map "e" (lambda () (interactive) (if (eq earl-caps-lock 1) (insert "E") (insert "e"))))
