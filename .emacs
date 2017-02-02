@@ -1942,8 +1942,8 @@ See both toggle-frame-maximized and its following if statement."
       (earl-newline-and-indent)))
   
   ;; Indent each new line automatically
-  (define-key evil-normal-state-local-map [return] 'earl-newline-check-for-comment)
-  (define-key evil-insert-state-local-map [return] 'earl-newline-check-for-comment)
+  (define-key evil-normal-state-local-map [return] 'earl-newline-and-indent)
+  (define-key evil-insert-state-local-map [return] 'earl-newline-and-indent)
   
   ;;****************************
   ;;
