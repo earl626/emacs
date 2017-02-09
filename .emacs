@@ -4274,6 +4274,11 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "l" 'forward-char)
 (define-key evil-normal-state-map "L" 'forward-word)
 
+(global-set-key (kbd "<S-up>") 'previous-blank-line)
+(global-set-key (kbd "<S-left>") 'backward-word)
+(global-set-key (kbd "<S-down>") 'next-blank-line)
+(global-set-key (kbd "<S-right>") 'forward-word)
+
 (define-key evil-normal-state-map "o" 'end-or-middle-of-line)
 (define-key evil-normal-state-map "u" 'beginning-of-indentation-or-line)
 (define-key evil-normal-state-map "'" 'forward-or-backward-sexp) ;; Go to the matching parenthesis character if one is adjacent to point.
