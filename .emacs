@@ -1137,6 +1137,82 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
+(defun earl-light-sol-theme-super-contrast ()
+  "Light sol theme with stronger contrast"
+  (interactive)
+  
+  ;; Color variables
+  ;; -------------------------------
+  (setq earl-color-text "000000")
+  (setq earl-color-comment earl-color-sol-base01)
+  (setq earl-color-type earl-color-sol-blue)
+  (setq earl-color-string earl-color-sol-green)
+  (setq earl-color-keyword earl-color-sol-orange)
+  (setq earl-color-emphasized "000000")
+  (setq earl-color-cursor earl-color-emphasized)
+  (setq earl-color-background earl-color-sol-base3)
+  (setq earl-color-hl-line earl-color-sol-base2)
+  (setq earl-color-todo earl-color-sol-red)
+  (setq earl-color-study earl-color-sol-yellow)
+  (setq earl-color-important earl-color-sol-magenta)
+  (setq earl-color-note earl-color-sol-blue)
+  
+  ;; Line highlighting, selection highlighting
+  (set-face-background 'hl-line earl-color-hl-line)
+  (set-face-background 'region earl-color-light-background)
+  
+  ;; Matching parentheses highlightning
+  (set-face-background 'show-paren-match "#92D4FF")
+  (set-face-foreground 'show-paren-match "#ffffff")
+  (set-face-background 'show-paren-mismatch earl-color-sol-red)
+  (set-face-foreground 'show-paren-mismatch "#ffffff")
+  ;; (set-face-attribute 'show-paren-match nil :box '(:line-width -1 :color "black" :style nil))
+  ;; (set-face-attribute 'show-paren-mismatch nil :box '(:line-width -1 :color "black" :style nil))
+  
+  ;; IDO-color-configuration (affects mainly the MINIBUFFER)
+  (set-face-attribute 'ido-subdir nil :foreground earl-color-text)
+  (set-face-attribute 'ido-first-match nil :foreground earl-color-sol-blue)
+  (set-face-attribute 'ido-only-match nil :foreground earl-color-sol-green)
+  (set-face-attribute 'ido-indicator nil :foreground earl-color-text)
+  (set-face-attribute 'ido-incomplete-regexp nil :foreground earl-color-text)
+  
+  ;; isearch
+  (set-face-background 'isearch earl-color-sol-green)
+  (set-face-foreground 'isearch "#ffffff")
+  (set-face-background 'lazy-highlight "#82C4D5")
+  (set-face-foreground 'lazy-highlight "#ffffff")
+  
+  ;; Compilation
+  (set-face-foreground 'compilation-error earl-color-sol-red)
+  (set-face-foreground 'compilation-info earl-color-sol-green)
+  
+  ;; Misc stuff
+  (set-face-attribute 'font-lock-builtin-face nil :foreground earl-color-keyword)
+  (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-comment-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-constant-face nil :foreground earl-color-type)
+  (set-face-attribute 'font-lock-doc-face nil :foreground earl-color-comment)
+  (set-face-attribute 'font-lock-function-name-face nil :foreground earl-color-text)
+  (set-face-attribute 'font-lock-keyword-face nil :foreground earl-color-keyword)
+  (set-face-attribute 'font-lock-negation-char-face nil :foreground earl-color-text)
+  (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
+  (set-face-attribute 'font-lock-string-face nil :foreground earl-color-string)
+  (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
+  (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
+  ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
+  ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
+  
+  (set-foreground-color earl-color-text)
+  (set-background-color earl-color-background)
+  (set-face-background 'fringe earl-color-background) ;; earl-color-hl-line
+  (set-cursor-color earl-color-cursor)
+  
+  (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
+  (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
+  (modify-face 'font-lock-important-face earl-color-important nil nil t nil t nil nil)
+  (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
+  )
+
 (defun earl-dark-sol-theme ()
   "Dark sol theme"
   (interactive)
@@ -1365,11 +1441,11 @@ See both toggle-frame-maximized and its following if statement."
 
 (setq earl-theme-list (list 'casey-dark-theme 'casey-dark-theme-colorful
                             'earl-gray-theme 'earl-white-theme
-                            'earl-light-sol-theme 'earl-light-sol-theme-contrast
+                            'earl-light-sol-theme 'earl-light-sol-theme-contrast 'earl-light-sol-theme-super-contrast
                             'earl-dark-sol-theme 'earl-dark-sol-theme-colorful
                             'jblow-dark-theme))
 
-(setq earl-last-theme-index 8)
+(setq earl-last-theme-index 9)
 (setq earl-default-theme 5)
 (setq earl-current-theme earl-default-theme)
 
