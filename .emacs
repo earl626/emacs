@@ -1075,7 +1075,7 @@ See both toggle-frame-maximized and its following if statement."
   (setq earl-color-emphasized earl-color-sol-base03) ;; earl-color-sol-base03, earl-color-sol-base02
   (setq earl-color-cursor earl-color-emphasized)
   (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-hl-line earl-color-sol-base2) ;; earl-color-sol-base2 "#ffffff" earl-color-background
+  (setq earl-color-hl-line "#ffffff") ;; earl-color-sol-base2 "#ffffff" earl-color-background
   (setq earl-color-todo earl-color-sol-red)
   (setq earl-color-study earl-color-sol-yellow)
   (setq earl-color-important earl-color-sol-magenta)
@@ -1145,17 +1145,17 @@ See both toggle-frame-maximized and its following if statement."
   ;; -------------------------------
   (setq earl-color-text "000000")
   (setq earl-color-comment earl-color-sol-base01)
-  (setq earl-color-type earl-color-sol-blue)
-  (setq earl-color-string earl-color-sol-green)
-  (setq earl-color-keyword earl-color-sol-orange)
+  (setq earl-color-type "#0D72B9")
+  (setq earl-color-string "#6C8000")
+  (setq earl-color-keyword "#C31916")
   (setq earl-color-emphasized "000000")
   (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-hl-line earl-color-sol-base2)
-  (setq earl-color-todo earl-color-sol-red)
+  (setq earl-color-background earl-color-sol-base3) ;; earl-color-sol-base3, "#ffffff"
+  (setq earl-color-hl-line "#ffffff") ;; earl-color-sol-base2, "#ffffff"
+  (setq earl-color-todo earl-color-keyword)
   (setq earl-color-study earl-color-sol-yellow)
   (setq earl-color-important earl-color-sol-magenta)
-  (setq earl-color-note earl-color-sol-blue)
+  (setq earl-color-note earl-color-type)
   
   ;; Line highlighting, selection highlighting
   (set-face-background 'hl-line earl-color-hl-line)
