@@ -1075,7 +1075,7 @@ See both toggle-frame-maximized and its following if statement."
   (setq earl-color-emphasized earl-color-sol-base03) ;; earl-color-sol-base03, earl-color-sol-base02
   (setq earl-color-cursor earl-color-emphasized)
   (setq earl-color-background earl-color-sol-base3)
-  (setq earl-color-hl-line "#ffffff") ;; earl-color-sol-base2 "#ffffff" earl-color-background
+  (setq earl-color-hl-line earl-color-sol-base2) ;; earl-color-sol-base2 "#ffffff" earl-color-background
   (setq earl-color-todo earl-color-sol-red)
   (setq earl-color-study earl-color-sol-yellow)
   (setq earl-color-important earl-color-sol-magenta)
