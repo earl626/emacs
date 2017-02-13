@@ -4172,6 +4172,17 @@ is called as a function to find the defun's end."
    (buffer-list))
   (message "Killed all buffers visiting a file"))
 
+(defun earl-kill-all-buffers-not-visiting-a-file ()
+  "Kill all buffers not visiting a file"
+  (interactive)
+  (mapc
+   (lambda (x)
+     (let ((name (buffer-name x)))
+       (if (and (not (eq ?\s (aref name 0))) (not (buffer-file-name x)))
+           (kill-buffer x))))
+   (buffer-list))
+  (message "Killed all buffers visiting a file"))
+
 ;;**************************************************************
 ;;
 ;; Load project
@@ -4193,16 +4204,21 @@ is called as a function to find the defun's end."
     ;; Parse project file
     (switch-to-buffer project-file-buffer)
     (goto-char (point-min))
-    (while (not (eq (point) (point-max)))
-      (let ((line (buffer-substring-no-properties (point) (progn (end-of-line) (point)))))
-        (find-file line t)
-        (if (and (string-match "[*][.][a-zA-Z]+$" line) (string= line (buffer-name)))
+    (while (not (eq (point) (point-max))) ;; while not finished
+      (let ((line (buffer-substring-no-properties (point) (progn (end-of-line) (point))))) ;; read line
+        (find-file line t) ;; execute line
+        ;; Kill buffers that were not supposed to be created
+        ;; E.G. regular expression line "*.*" doesn't result in any files and a buffer named "*.*" is created
+        ;; Windows does not allow * in their file/folder names, so we can easily find and kill these buffers
+        (if (string-match "[*]+" (buffer-name))
             (if (buffer-modified-p) (progn (undo-tree-undo) (kill-buffer)) (kill-buffer)))
+        ;; Switch back to project buffer after find-file switched to the new buffer
         (switch-to-buffer project-file-buffer))
-      (if (not (eq (point) (point-max))) (progn (next-line) (beginning-of-line))))
+      (if (not (eq (point) (point-max))) (progn (next-line) (beginning-of-line)))) ;; next line
     ;; Close project file and finish
-    (kill-buffer project-file-buffer)
-    (switch-to-buffer previous-buffer)
+    (if (eq previous-buffer project-file-buffer)
+        (kill-buffer project-file-buffer)
+      (progn (kill-buffer project-file-buffer) (switch-to-buffer previous-buffer)))
     (message "Successfully loaded: %s" file)))
 
 (defun earl-load-project-backend (path)
@@ -4215,7 +4231,13 @@ is called as a function to find the defun's end."
     (cd previous-directory)))
 
 (defun earl-load-project ()
-  "Loads a specified project by the user"
+  "Looks for a file named setup.prj at the specified location and if found processes it line by line.
+   If no file is found, looks recursivelly in the parent directory untill root.
+   Usage:
+            Create a file named setup.prf in your project folder
+            Each line in setup.prj is an argument to find-file.
+            Argument examples: main.cpp, *.cpp, *.*, data/main.cpp, data/*.cpp and data/*.*
+            NOTE: Be careful with * (it includes folders) For files use *.* (hidden folders?)"
   (interactive)
   (let ((path (read-directory-name "Enter project path: " default-directory default-directory t)))
     (earl-load-project-backend path)))
