@@ -4144,6 +4144,87 @@ is called as a function to find the defun's end."
 
 (setq global-auto-revert-non-file-buffers t)
 
+;;**************************************************************
+;;
+;; Kill all buffers
+;;
+;;**************************************************************
+
+(defun earl-kill-all-buffers ()
+  "Kill all buffers without a leading space in the buffer-name (emacs-internal-buffers)"
+  (interactive)
+  (mapc
+   (lambda (x)
+     (let ((name (buffer-name x)))
+       (unless (eq ?\s (aref name 0))
+         (kill-buffer x))))
+   (buffer-list))
+  (message "Killed all buffers"))
+
+(defun earl-kill-all-buffers-visiting-a-file ()
+  "Kill all buffers visiting a file"
+  (interactive)
+  (let ((i 0))
+    (while (< i (length (buffer-list)))
+      (let((current-buffer (nth i (buffer-list))))
+        (if (buffer-file-name current-buffer)
+            (kill-buffer)
+          (setq i (+ i 1))))))
+  (message "Killed all buffers visiting a file"))
+
+;;**************************************************************
+;;
+;; Load project
+;;
+;;**************************************************************
+
+(setq earl-project-file "setup.prj")
+
+(defun earl-find-project-file ()
+  "Recursively search for a project file."
+  (if (file-exists-p earl-project-file) t
+    (if (or (string-match "^[a-zA-Z]:/$" default-directory) (string= default-directory "/")) nil
+      (progn (cd "../") (earl-find-project-file)))))
+
+(defun earl-load-project-from-project-file (file)
+  "Loads a project from a project file"
+  (let ((previous-buffer (current-buffer))
+        (project-file-buffer (find-file file)))
+    ;; Parse project file
+    (switch-to-buffer project-file-buffer)
+    (goto-char (point-min))
+    (while (not (eq (point) (point-max)))
+      (let ((line (buffer-substring-no-properties (point) (progn (end-of-line) (point)))))
+        (find-file line t)
+        (if (and (string-match "[*][.][a-zA-Z]+$" line) (string= line (buffer-name)))
+            (if (buffer-modified-p) (progn (undo-tree-undo) (kill-buffer)) (kill-buffer)))
+        (switch-to-buffer project-file-buffer))
+      (if (not (eq (point) (point-max))) (progn (next-line) (beginning-of-line))))
+    ;; Close project file and finish
+    (kill-buffer project-file-buffer)
+    (switch-to-buffer previous-buffer)
+    (message "Successfully loaded: %s" file)))
+
+(defun earl-load-project-backend (path)
+  "Loads an entire project as described in the projects setup.prj file"
+  (let ((previous-directory default-directory))
+    (cd path)
+    (if (earl-find-project-file)
+        (earl-load-project-from-project-file (concat default-directory earl-project-file))
+      (message "Found no setup.prj file in directory: %s" path))
+    (cd previous-directory)))
+
+(defun earl-load-project ()
+  "Loads a specified project by the user"
+  (interactive)
+  (let ((path (read-directory-name "Enter project path: " default-directory default-directory t)))
+    (earl-load-project-backend path)))
+
+(defun earl-load-project-without-promt ()
+  "Loads a project in current directory or one of the parent directories"
+  (interactive)
+  (earl-load-project-backend default-directory))
+
 ;;***********************************************************************************************************************************
 ;;
 ;;                                                     Evil Mode
@@ -4522,6 +4603,10 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;; (define-key evil-normal-state-map "\C-f" 'eval-last-sexp)
 ;; (define-key evil-normal-state-map "\C-f" 'eval-region)
 ;; (define-key evil-normal-state-map "\C-f" 'eval-buffer)
+
+;; Loading project
+(define-key evil-normal-state-map [f12] 'earl-load-project)
+(define-key evil-insert-state-map [f12] 'earl-load-project)
 
 ;;*****************************************
 ;;
