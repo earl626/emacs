@@ -4164,12 +4164,12 @@ is called as a function to find the defun's end."
 (defun earl-kill-all-buffers-visiting-a-file ()
   "Kill all buffers visiting a file"
   (interactive)
-  (let ((i 0))
-    (while (< i (length (buffer-list)))
-      (let((current-buffer (nth i (buffer-list))))
-        (if (buffer-file-name current-buffer)
-            (kill-buffer)
-          (setq i (+ i 1))))))
+  (mapc
+   (lambda (x)
+     (let ((name (buffer-name x)))
+       (if (and (not (eq ?\s (aref name 0))) (buffer-file-name x))
+           (kill-buffer x))))
+   (buffer-list))
   (message "Killed all buffers visiting a file"))
 
 ;;**************************************************************
