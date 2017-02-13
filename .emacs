@@ -4206,14 +4206,16 @@ is called as a function to find the defun's end."
     (goto-char (point-min))
     (while (not (eq (point) (point-max))) ;; while not finished
       (let ((line (buffer-substring-no-properties (point) (progn (end-of-line) (point))))) ;; read line
-        (find-file line t) ;; execute line
-        ;; Kill buffers that were not supposed to be created
-        ;; E.G. regular expression line "*.*" doesn't result in any files and a buffer named "*.*" is created
-        ;; Windows does not allow * in their file/folder names, so we can easily find and kill these buffers
-        (if (string-match "[*]+" (buffer-name))
-            (if (buffer-modified-p) (progn (undo-tree-undo) (kill-buffer)) (kill-buffer)))
-        ;; Switch back to project buffer after find-file switched to the new buffer
-        (switch-to-buffer project-file-buffer))
+        (if (not (string= line "")) ;; if line is valid
+            (progn
+              (find-file line t) ;; execute line
+              ;; NOTE Kill buffers that were not supposed to be created
+              ;; E.G. if regular expression line "*.*" doesn't result in any files a buffer named "*.*" is created
+              ;; Windows does not allow * in their file/folder names, so we can easily find and kill these buffers
+              (if (string-match "[*]+" (buffer-name))
+                  (if (buffer-modified-p) (progn (undo-tree-undo) (kill-buffer)) (kill-buffer)))
+              ;; Switch back to project buffer after find-file switched to the new buffer
+              (switch-to-buffer project-file-buffer))))
       (if (not (eq (point) (point-max))) (progn (next-line) (beginning-of-line)))) ;; next line
     ;; Close project file and finish
     (if (eq previous-buffer project-file-buffer)
