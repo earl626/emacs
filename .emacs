@@ -2434,7 +2434,7 @@ the current position of point, then move it to the beginning of the line."
 the current position of point, then move it to the beginning of the line."
   (interactive)
   (let ((pt (point)))
-    (back-to-indentation)
+    (back-to-indentation) ;; beginning-of-line-text
     (when (eq pt (point))
       (beginning-of-line))))
 
@@ -4468,7 +4468,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (global-set-key (kbd "<S-down>") 'next-blank-line)
 (global-set-key (kbd "<S-right>") 'forward-word)
 
-(define-key evil-normal-state-map "o" 'end-or-middle-of-line)
+(define-key evil-normal-state-map "o" 'end-of-line) ;; end-or-middle-of-line
 (define-key evil-normal-state-map "u" 'beginning-of-indentation-or-line)
 (define-key evil-normal-state-map "'" 'forward-or-backward-sexp) ;; Go to the matching parenthesis character if one is adjacent to point.
 (define-key evil-normal-state-map "[" 'search-move-backward-paren-opening-and-closing)
