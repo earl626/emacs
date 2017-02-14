@@ -1950,6 +1950,7 @@ See both toggle-frame-maximized and its following if statement."
   (defun casey-find-corresponding-file-other-window ()
     "Find the file that corresponds to this one."
     (interactive)
+    (if (= (count-windows) 1) (split-window-horizontally))
     (find-file-other-window buffer-file-name)
     (casey-find-corresponding-file)
     (other-window -1))
