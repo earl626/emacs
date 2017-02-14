@@ -1660,7 +1660,12 @@ See both toggle-frame-maximized and its following if statement."
                               buffer)
             (progn
               (bury-buffer buffer)
-              (switch-to-prev-buffer (get-buffer-window buffer) 'kill))))))
+              (switch-to-prev-buffer (get-buffer-window buffer) 'kill)))
+        (if (= (count-windows) 1)
+            (progn (switch-to-prev-buffer)
+                   (split-window-horizontally)
+                   (switch-to-buffer-other-window "*compilation*")
+                   (other-window 1))))))
 (add-hook 'compilation-finish-functions 'earl-bury-compile-buffer-if-successful)
 
 ;;********************************
@@ -4546,7 +4551,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "a" 'other-window)
 (define-key evil-normal-state-map "Z" 'kill-this-buffer)
 (define-key evil-normal-state-map (kbd "C-¬") 'save-buffers-kill-terminal) ;; C-x C-c
-(define-key evil-normal-state-map "|" 'delete-window) ;; delete-other-windows
+(define-key evil-normal-state-map "|" 'delete-other-windows) ;; delete-other-windows, delete-window
 
 ;; C-x C-z runs the command suspend-frame
 (global-unset-key (kbd "C-x C-z"))
