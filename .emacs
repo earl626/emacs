@@ -501,6 +501,23 @@ See both toggle-frame-maximized and its following if statement."
 (setq-default mode-line-format '("%e" mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position evil-mode-line-tag
                                  (vc-mode vc-mode)
                                  "  " mode-line-modes mode-line-misc-info mode-line-end-spaces "   %f"))
+(setq earl-mode-line-color (cons (face-background 'mode-line) (face-foreground 'mode-line)))
+(setq earl-mode-line-inactive-color (cons (face-background 'mode-line-inactive) (face-foreground 'mode-line-inactive)))
+(setq earl-mode-line-compilation-in-progress-color '("#268bd2" . "#ffffff"))
+(setq earl-mode-line-compilation-succsess-color '("#859900" . "#ffffff"))
+(setq earl-mode-line-compilation-error-color '("#dc322f" . "#ffffff"))
+
+(defun earl-set-face-background-and-foreground (face color)
+  (set-face-background face (car color))
+  (set-face-foreground face (cdr color)))
+
+;; ;; Set the mode-line specific for the compiler-buffer
+;; (add-hook 'compilation-mode-hook
+;;           (lambda ()
+;;             (face-remap-add-relative
+;;              'mode-line '((:foreground "#ffffff" :background "#dc322f") mode-line))
+;;             (face-remap-add-relative
+;;              'mode-line-inactive '((:foreground "#000000" :background "#FF9895") mode-line)))) ;; "#FF9895", "#FF7F7C"
 
 ;; NOTE(earl): Line highlighting
 (global-hl-line-mode 1) ;; Current line highlighting
@@ -1548,11 +1565,11 @@ See both toggle-frame-maximized and its following if statement."
 ;; ;; If that's too slow for some reason you might also have a look at backup-by-copying-when-linked
 ;; (setq backup-by-copying t)
 
-;;**************************************************************
+;;************************************************************************************************************
 ;;
 ;; Compilation
 ;;
-;;**************************************************************
+;;************************************************************************************************************
 
 (setq compilation-context-lines 0)
 (setq compilation-error-regexp-alist
@@ -1594,12 +1611,13 @@ See both toggle-frame-maximized and its following if statement."
   (interactive)
   (save-some-buffers 1)
   (if (find-project-directory) (compile casey-makescript))
-  (if (= (count-windows) 1) (switch-to-prev-buffer) (other-window 1)))
+  (switch-to-prev-buffer) (other-window 1)
+  (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
+;; (earl-set-face-background-and-foreground 'mode-line-inactive earl-mode-line-compilation-in-progress-color)
 
 (defun casey-big-fun-compilation-hook ()
   (make-local-variable 'truncate-lines)
-  (setq truncate-lines nil)
-  )
+  (setq truncate-lines nil))
 (add-hook 'compilation-mode-hook 'casey-big-fun-compilation-hook)
 
 ;;-------------------------------------------
@@ -1612,6 +1630,23 @@ See both toggle-frame-maximized and its following if statement."
 
 ;; Set this to "t" or "nil" depending on whether or not you want to automatically close the compile buffer with a delay
 (setq earl-close-compile-buffer-with-delay nil)
+
+;; Set this to "t" or "nil" depending on whether or not you want emacs to ignore
+;; "LINK : fatal error LNK1104: cannot open file"
+;; and not display the compilation buffer
+(setq earl-ignore-compiler-error-cannot-open-file-variable nil)
+
+(defun earl-ignore-compiler-error-cannot-open-file ()
+  "Toggle whether or not emacs will ignore the compiler error cannot open file when
+    window count == 1"
+  (interactive)
+  (if (eq earl-ignore-compiler-error-cannot-open-file-variable t)
+      (progn
+        (setq earl-ignore-compiler-error-cannot-open-file-variable nil)
+        (message "NOT ignoring compiler error 'cannot open file'"))
+    (progn
+      (setq earl-ignore-compiler-error-cannot-open-file-variable t)
+      (message "Ignoring compiler error 'cannot open file'"))))
 
 (defun earl-close-compile-buffer-automatically ()
   "Toggle whether or not to close the compile buffer automatically when successful without warnings"
@@ -1635,6 +1670,12 @@ See both toggle-frame-maximized and its following if statement."
       (setq earl-close-compile-buffer-with-delay t)
       (message "Closing compile buffer with delay"))))
 
+(defun earl-change-mode-line-color-after-compilation (mode-line color-start color-end delay)
+  "Change mode-line color based on compilation status"
+  (earl-set-face-background-and-foreground mode-line color-start)
+  (run-with-timer
+   delay nil (lambda (mode color) (earl-set-face-background-and-foreground mode color)) mode-line color-end))
+
 ;; Close compilation buffer if finished with no errors
 (defun earl-bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings"
@@ -1642,33 +1683,40 @@ See both toggle-frame-maximized and its following if statement."
       (if (and
            (string-match "compilation" (buffer-name buffer))
            (string-match "finished" string)
-           (not
-            (or
-             (with-current-buffer buffer
-               (goto-char (point-min))
-               (search-forward "error" nil t)) ;; Could change this with a regexp: "error\|warning", search-forward-regexp
-             (with-current-buffer buffer
-               (goto-char (point-min))
-               (search-forward "warning" nil t)))))
-          ;; t   == Add a small delay before closing the buffer
-          ;; nil == Close the buffer immediately
-          (if (eq earl-close-compile-buffer-with-delay t)
-              (run-with-timer 1 nil
-                              (lambda (buf)
-                                (bury-buffer buf)
-                                (let ((compilation-window (get-buffer-window buf)))
-                                  (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
-                                    (kill-buffer buf))))
-                              buffer)
-            (progn
-              (bury-buffer buffer)
-              (let ((compilation-window (get-buffer-window buffer)))
-                (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
-                  (kill-buffer buffer)))))
-        (if (= (count-windows) 1)
-            (progn (split-window-horizontally)
-                   (switch-to-buffer-other-window "*compilation*")
-                   (other-window 1))))))
+           (with-current-buffer buffer
+             (goto-char (point-min))
+             (let ((done-searching nil)
+                   (found-errors t))
+               (while (not done-searching)
+                 (if (search-forward-regexp "error\\|warning" nil t)
+                     (if earl-ignore-compiler-error-cannot-open-file-variable
+                         (if (search-forward-regexp "LNK1104: cannot open file" (line-end-position) t) () ;; the error can be ignored, continue loop
+                           (progn (setq done-searching t) (setq found-errors t))) ;; founc errors, and not the ones we can ignore
+                       (progn (setq done-searching t) (setq found-errors t))) ;; found errors (don't ignore warnings)
+                   (progn (setq done-searching t) (setq found-errors nil)))) ;; found no errors
+               (not found-errors))))
+          ;; Compilation success
+          (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 2)
+                 ;; (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-succsess-color earl-mode-line-inactive-color 2)
+                 (if (eq earl-close-compile-buffer-with-delay t)
+                     (run-with-timer 1 nil
+                                     (lambda (buf)
+                                       (bury-buffer buf)
+                                       (let ((compilation-window (get-buffer-window buf)))
+                                         (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
+                                           (kill-buffer buf))))
+                                     buffer)
+                   (progn
+                     (bury-buffer buffer)
+                     (let ((compilation-window (get-buffer-window buffer)))
+                       (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
+                         (kill-buffer buffer))))))
+        ;; Compilation error
+        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 2)
+               (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 2)
+               (if (= (count-windows) 1) (split-window-horizontally))
+               (switch-to-buffer-other-window "*compilation*")
+               (other-window 1)))))
 (add-hook 'compilation-finish-functions 'earl-bury-compile-buffer-if-successful)
 
 ;;********************************
@@ -4863,7 +4911,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;; (global-set-key (kbd "C-M-u") 'scroll-right)
 ;; (put 'scroll-right 'disabled nil) ;; What did this line do?
 
-(setq hscroll-margin 5) ; controls how close point can get to left/right edges before scrolling
+(setq hscroll-margin 1) ; controls how close point can get to left/right edges before scrolling
 ;; (setq hscroll-step 50) ; controls how many columns to scroll the window when point too close to edge, default = center point
 (global-set-key (kbd "C-M-o") (lambda () (interactive) (scroll-left 64 64)))  ; scroll-left
 (global-set-key (kbd "C-M-u") (lambda () (interactive) (scroll-right 64 64))) ; scroll-right
