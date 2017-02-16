@@ -1,22 +1,17 @@
 ﻿
-;;***********************************************************************************************************************************
+;;*************************************************************************************************************
 ;;
-;;                                                 Earl's .emacs-configuration
+;;                                           Earl's .emacs-configuration
 ;;
-;;===================================================================================================================================
+;;=============================================================================================================
 
 ;;; TODO(earl):
 ;;;     - Finish CTags (compiler list dependencies, ctags tags file generation)
-;;;     - Choose a color theme (high contrast vs low contrast)
 ;;;     - Emacs Latex, AUCTEX (https://www.gnu.org/software/auctex/)
 ;;;       Prolly simple enough to just write latex-source in Emacs and view result in browser or something
 ;;;       Improve general editting, indentation, etc...
-;;;     - Emacs ORG Mode (http://orgmode.org/)
-;;;       (http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html)
-;;;       Color theme
 ;;;     - Interesting config file (https://github.com/incandescentman)
 ;;;     - Emacs real time markdown viewer (necessary?)
-;;;     - Emacs load project, emacs open all files in directory recursively
 ;;;     - Emacs Multiple Cursors (https://github.com/magnars/multiple-cursors.el)
 ;;;     - Video to Watch: https://www.youtube.com/watch?v=5FQwQ0QWBTU
 ;;;     - Easy find file in project (https://www.emacswiki.org/emacs/FindFileInProject)
@@ -27,22 +22,22 @@
 ;;;       (https://magit.vc/)
 ;;;     - Emacs AutoComplete (emacs autocomplete, dropdownlist)
 ;;;     - Python???
-;;;     - See if you can optimize previous-blank-line and next-blank-line
-;;;     - Verify that indentation is working as intended
 ;;;     - Review this .emacs file with extra concern for memory consumption, and general performance
-;;;       See if you can get Emacs down to 14 MB memory consumption before loading any tag-files
-;;;     - Creates something that parses the Emacs-configuration-file and manipulates it
-;;;       Like something that asks the user to store something the user has given it for future session
-;;;       If yes it locates the config-file (.emacs), if no previous entries creates a new list with unique
-;;;       name, otherwise adds to an allready existing list (as long as entry is not allready member)
-;;;     - Clean up this .emacs file, possibly rework a lot of it, especially the theme section
-;;;     - Store the notes at the bottom of this .emacs file in some other file? (emacs-tips)
+;;;       NOTE(ear):
+;;;                  See if you can get Emacs down to 14 MB memory consumption before loading any tag-files
+;;;                  After upgrading Emacs to version 25.1-2, memory consumption jumped to 30 MB after startup
+;;;                  Emacs versions: i686 is the 32-bit version, and x86_64 is the 64-bit version of the OS.
+;;;                  I've installed the 64-bit version so it's Kk after all.
+;;;     - INTROSPECTION
+;;;           Creates something that parses the Emacs-configuration-file and manipulates it
+;;;           Like something that asks the user to store something the user has given it for future session
+;;;           If yes it locates the config-file (.emacs), if no previous entries creates a new list with unique
+;;;           name, otherwise adds to an allready existing list (as long as entry is not allready member)
 ;;;     - Google search / Dictionary search in Emacs?
 ;;;     - Emacs Custom Mode Line
 
 ;;; STUDY(earl):
 ;;;     - Indentation
-;;;     - Casey-configuration
 ;;;     - Splitting the window in more than two sections???
 
 ;;; NOTE(earl):
@@ -52,26 +47,103 @@
 ;;;     - F1 ?     = further options
 
 ;;; IMPORTANT(earl):
-;;;     - I don't think this fully applies anymore... but I donno... :P
 ;;;     - This emacs-configuration is made with the UK keyboard layout
-;;;     - To switch between EVIL-mode and Emacs-mode, just comment out all code for the mode you don't want to use
-;;;     - Set the mark and use "comment-region" and "uncomment-region" to comment and uncomment shit in this file
-;;;     - Key configurations ment for standard Emacs mode should all be marked "Emacs key configuration"
-;;;     - Key configurations ment for Evil mode should all be marked "Evil key configuration"
-;;;     - Other configurations ment for Evil Mode should all be marked "Evil Mode"
-;;;     - Other configurations that are not marked should not be touched unless you know what you are doing
+;;;     - The Emacs key configuration is from my old setup
+;;;     - The Evil Mode is what I'm currently using
 
 ;;; NOTE(earl): List of useful functions
 ;;;     - (print OBJECT &optional PRINTCHARFUN)
-;;;     - (message FORMAT-STRING &rest ARGS)
+;;;     - (message FORMAT-STRING &rest ARGS) e.g. (message "%s" var)
 ;;;     - (count-lines START END)
 ;;;     - (push-mark &optional LOCATION NOMSG ACTIVATE), (pop-mark)
 
-;;***********************************************************************************************************************************
+;;*************************************************************************************************************
 ;;
-;;                                                       Mode Line
+;;                                                Debug Mode
 ;;
-;;===================================================================================================================================
+;;=============================================================================================================
+
+;;; Enable debug mode
+;;; Enable "Enter debugger on error" from the Options menu and add
+;;; (setq debug-on-error t) or (custom-set-variables '(debug-on-error t)) to your ~/.emacs.el.
+;;; Then you will get a *Backtrace* buffer on C-x C-e:
+
+;; (setq debug-on-error t)
+
+;;; Disable ad-handle-definition warnings
+(setq ad-redefinition-action 'accept)
+
+;;*************************************************************************************************************
+;;
+;;                                             Load Emacs plugins
+;;
+;;=============================================================================================================
+
+;; Setup a folder where we can put all our plugins
+;; NOTE(earl): Evil Mode is not within this folder
+;;             Evil Mode has its own folder (elpa) which is in the "~/.emacs.d/" directory
+;;             Key Chord on the other hand is in the "~/.emacs.d/plugins" directory, and only consists of one el-file
+
+(add-to-list 'load-path "~/.emacs.d/plugins")
+
+;;***************************************
+;;
+;; Evil Mode
+;;
+;; https://www.emacswiki.org/emacs/Evil
+;; Quick Install
+;; Install using the latest version of Emacs and its builtin package system. Start with this in your .emacs:
+;;
+;;***************************************
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(package-initialize)
+
+;; Then:
+;;   M-x list-packages
+;;   C-s evil
+;; 
+;; Moving cursor over package name.
+;;   i
+;;   x
+;; i - mark for installation, x - to execute
+;; There should now be a folder named "elpa" in this folder "c:/Users/n06888/AppData/Roaming/.emacs.d/"
+
+;; Require Evil Mode
+(require 'evil)
+(evil-mode 1)
+
+;;***************************************
+;;
+;; Org-Mode, OrgMode, Org Mode
+;;
+;;***************************************
+
+(require 'org)
+(setq org-log-done t)
+
+;;***************************************
+;;
+;; Misc
+;;
+;;***************************************
+
+;; ;; Load Key Chord 
+;; (require 'key-chord)
+;; (key-chord-mode 1)
+
+;; Common Lisp for Emacs 
+(require 'cl)
+
+;; Require the ido-package
+(require 'ido)
+
+;;*************************************************************************************************************
+;;
+;;                                                Mode Line
+;;
+;;=============================================================================================================
 
 ;; TODO: Remove or add the nyan-cat-section
 ;;       Remember the mode line hooks throught this file (I think there are three places)
@@ -187,93 +259,11 @@
 ;;     :inherit 'mode-line-position-face
 ;;     :foreground "black" :background "#eab700")
 
-;;***********************************************************************************************************************************
+;;*************************************************************************************************************
 ;;
-;;                                                          Debug Mode
+;;                                   Determine the underlying operating system
 ;;
-;;===================================================================================================================================
-
-;;; Enable debug mode
-;;; Enable "Enter debugger on error" from the Options menu and add
-;;; (setq debug-on-error t) or (custom-set-variables '(debug-on-error t)) to your ~/.emacs.el.
-;;; Then you will get a *Backtrace* buffer on C-x C-e:
-
-;; (setq debug-on-error t)
-
-;;; Disable ad-handle-definition warnings
-(setq ad-redefinition-action 'accept)
-
-;;***********************************************************************************************************************************
-;;
-;;                                             Load Emacs plugins
-;;
-;;===================================================================================================================================
-
-;; Setup a folder where we can put all our plugins
-;; NOTE(earl): Evil Mode is not within this folder
-;;             Evil Mode has its own folder (elpa) which is in the "~/.emacs.d/" directory
-;;             Key Chord on the other hand is in the "~/.emacs.d/plugins" directory, and only consists of one el-file
-
-(add-to-list 'load-path "~/.emacs.d/plugins")
-
-;;***************************************
-;;
-;; Evil Mode
-;;
-;; https://www.emacswiki.org/emacs/Evil
-;; Quick Install
-;; Install using the latest version of Emacs and its builtin package system. Start with this in your .emacs:
-;;
-;;***************************************
-
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(package-initialize)
-
-;; Then:
-;;   M-x list-packages
-;;   C-s evil
-;; 
-;; Moving cursor over package name.
-;;   i
-;;   x
-;; i - mark for installation, x - to execute
-;; There should now be a folder named "elpa" in this folder "c:/Users/n06888/AppData/Roaming/.emacs.d/"
-
-;; Require Evil Mode
-(require 'evil)
-(evil-mode 1)
-
-;;***************************************
-;;
-;; Org-Mode, OrgMode, Org Mode
-;;
-;;***************************************
-
-(require 'org)
-(setq org-log-done t)
-
-;;***************************************
-;;
-;; Misc
-;;
-;;***************************************
-
-;; ;; Load Key Chord 
-;; (require 'key-chord)
-;; (key-chord-mode 1)
-
-;; Common Lisp for Emacs 
-(require 'cl)
-
-;; Require the ido-package
-(require 'ido)
-
-;;***********************************************************************************************************************************
-;;
-;;                                             Determine the underlying operating system
-;;
-;;===================================================================================================================================
+;;=============================================================================================================
 
 (setq casey-aquamacs (featurep 'aquamacs))
 (setq casey-linux (featurep 'x))
@@ -319,11 +309,11 @@
 (defun nil-bell ())
 (setq ring-bell-function 'nil-bell)
 
-;;***********************************************************************************************************************************
+;;*************************************************************************************************************
 ;;
-;;                                                            Bright-red TODOs
+;;                                                Bright-red TODOs
 ;;
-;;===================================================================================================================================
+;;=============================================================================================================
 
 (setq fixme-modes '(c++-mode c-mode emacs-lisp-mode))
 (make-face 'font-lock-fixme-face)
@@ -343,17 +333,17 @@
 (modify-face 'font-lock-important-face "Yellow" nil nil t nil t nil nil)
 (modify-face 'font-lock-note-face "Light Green" nil nil t nil t nil nil)
 
-;;=================================================================================================================================
+;;=============================================================================================================
 ;;
-;;                                                       Theme configuration
+;;                                              Theme configuration
 ;;
-;;=================================================================================================================================
+;;=============================================================================================================
 
-;;==============================================================================================================
+;;=============================================================================================================
 ;;
 ;; Font type and size
 ;;
-;;**************************************************************************************************************
+;;*************************************************************************************************************
 
 ;; STUDY(earl): Serif font might be better at a 4K-resolution screen? (Serif better at paper)
 ;;              Sans Serif better at low-resolution screen? (Sans Serif better at computer-screen)
@@ -1450,11 +1440,11 @@ See both toggle-frame-maximized and its following if statement."
   (modify-face 'font-lock-note-face earl-color-note nil nil t nil t nil nil)
   )
 
-;;********************************************************************************************************************************
+;;************************************************************************************************************
 ;;
-;; Dynamically change the theme
+;;                                         Dynamically change the theme
 ;;
-;;================================================================================================================================
+;;============================================================================================================
 
 (setq earl-theme-list (list 'casey-dark-theme 'casey-dark-theme-colorful
                             'earl-gray-theme 'earl-white-theme
@@ -1490,11 +1480,11 @@ See both toggle-frame-maximized and its following if statement."
 (global-set-key (kbd "<M-wheel-up>") 'earl-next-theme)
 (global-set-key (kbd "<M-wheel-down>") 'earl-previous-theme)
 
-;;********************************************************************************************************************************
+;;************************************************************************************************************
 ;;
 ;; Post load stuff
 ;;
-;;================================================================================================================================
+;;============================================================================================================
 
 (defun post-load-stuff ()
   (interactive)
@@ -1512,11 +1502,11 @@ See both toggle-frame-maximized and its following if statement."
   )
 (add-hook 'window-setup-hook 'post-load-stuff t)
 
-;;********************************************************************************************************************************
+;;************************************************************************************************************
 ;;
-;;                                                    Functions and Variables
+;;                                               Functions and Variables
 ;;
-;;================================================================================================================================
+;;============================================================================================================
 
 ;;;**************************************************************
 ;;;
@@ -1552,12 +1542,17 @@ See both toggle-frame-maximized and its following if statement."
  '(mouse-wheel-follow-mouse nil)
  '(mouse-wheel-progressive-speed nil)
  '(mouse-wheel-scroll-amount (quote (15)))
- '(version-control nil)) ;; t
+ '(version-control nil))
+
+;; ;; If auto save is enabled and anything happens, you can recover a file with "M-x recover-file"
 
 ;; ;; If you've ever had your ass saved by an Emacs backup file, you probably want more of them, not less of them.
 ;; ;; It is annoying that they go in the same directory as the file you're editing, but that is easy to change.
 ;; ;; You can make all backup files go into a directory by putting something like the following in your .emacs.
 ;; (setq backup-directory-alist `(("." . "~/.emacs.backups")))
+
+;; ;; Set where to store auto save files
+;; (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
 ;; ;; There are a number of arcane details associated with how Emacs might create your backup files.
 ;; ;; Should it rename the original and write out the edited buffer? What if the original is linked? In general,
@@ -1676,26 +1671,28 @@ See both toggle-frame-maximized and its following if statement."
   (run-with-timer
    delay nil (lambda (mode color) (earl-set-face-background-and-foreground mode color)) mode-line color-end))
 
+(defun earl-compilation-successfull (buffer string)
+  (and
+   (string-match "compilation" (buffer-name buffer))
+   (string-match "finished" string)
+   (with-current-buffer buffer
+     (goto-char (point-min))
+     (let ((done-searching nil)
+           (found-errors t))
+       (while (not done-searching)
+         (if (search-forward-regexp "error\\|warning" nil t)
+             (if earl-ignore-compiler-error-cannot-open-file-variable
+                 (if (search-forward-regexp "LNK1104: cannot open file" (line-end-position) t) () ;; the error can be ignored, continue loop
+                   (progn (setq done-searching t) (setq found-errors t))) ;; founc errors, and not the ones we can ignore
+               (progn (setq done-searching t) (setq found-errors t))) ;; found errors (don't ignore warnings)
+           (progn (setq done-searching t) (setq found-errors nil)))) ;; found no errors
+       (not found-errors)))))
+
 ;; Close compilation buffer if finished with no errors
 (defun earl-bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings"
   (if (eq earl-close-compile-buffer-automatically t)
-      (if (and
-           (string-match "compilation" (buffer-name buffer))
-           (string-match "finished" string)
-           (with-current-buffer buffer
-             (goto-char (point-min))
-             (let ((done-searching nil)
-                   (found-errors t))
-               (while (not done-searching)
-                 (if (search-forward-regexp "error\\|warning" nil t)
-                     (if earl-ignore-compiler-error-cannot-open-file-variable
-                         (if (search-forward-regexp "LNK1104: cannot open file" (line-end-position) t) () ;; the error can be ignored, continue loop
-                           (progn (setq done-searching t) (setq found-errors t))) ;; founc errors, and not the ones we can ignore
-                       (progn (setq done-searching t) (setq found-errors t))) ;; found errors (don't ignore warnings)
-                   (progn (setq done-searching t) (setq found-errors nil)))) ;; found no errors
-               (not found-errors))))
-          ;; Compilation success
+      (if (earl-compilation-successfull buffer string)
           (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 2)
                  ;; (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-succsess-color earl-mode-line-inactive-color 2)
                  (if (eq earl-close-compile-buffer-with-delay t)
@@ -1711,7 +1708,6 @@ See both toggle-frame-maximized and its following if statement."
                      (let ((compilation-window (get-buffer-window buffer)))
                        (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
                          (kill-buffer buffer))))))
-        ;; Compilation error
         (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 2)
                (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 2)
                (if (= (count-windows) 1) (split-window-horizontally))
@@ -2381,41 +2377,45 @@ the current position of point, then move it to the beginning of the line."
                (set-buffer-modified-p nil)
                (message "File '%s' successfully renamed to '%s'" name (file-name-nondirectory new-name))))))))
 
-(defun previous-blank-line ()
-  "Moves to the previous line containing nothing but whitespace.
-   If several of these lines together, then treat them all as one.
-   If none are found, then move to beginning-of-buffer"
-  (interactive)
-  (if (search-backward-regexp "^[ \t]*\n" (point-min) t)
-      (progn
-        (end-of-line) (forward-char)
-        (if (looking-at-p "^[ \t]*\n\\|\\(^[ \t]*\n\\)*\\'")
-            (progn (backward-char) (beginning-of-line)
-                   (backward-char) (beginning-of-line)
-                   (if (not (looking-at-p "^[ \t]*\n")) (progn (end-of-line) (forward-char) (back-to-indentation))
-                     (progn (end-of-line) (forward-char) (previous-blank-line) (back-to-indentation))))
-          (progn (backward-char) (beginning-of-line) (back-to-indentation))))
+(defun earl-current-line-empty ()
+  (beginning-of-line)
+  (looking-at "[[:space:]]*$"))
+
+(defun earl-goto-previous-blank-line ()
+  (if (search-backward-regexp "^\\s-*$" nil t)
+      (goto-char (match-beginning 0))
     (goto-char (point-min))))
 
-(defun next-blank-line ()
+(defun earl-goto-next-blank-line ()
+  (if (search-forward-regexp "^\\s-*$" nil t)
+      (goto-char (match-beginning 0))
+    (goto-char (point-max))))
+
+(defun earl-previous-blank-line ()
+  "Moves to the previous line containing nothing but whitespace.
+   If several of these lines together, then treat them all - except the one furtherst away - as one.
+   If none are found, then move to beginning-of-buffer"
+  (interactive)
+  (if (earl-current-line-empty)
+      (progn
+        (previous-line) 
+        (if (earl-current-line-empty)
+            (progn (loop do (previous-line) while (looking-at "[[:space:]]*$")) (goto-char (match-beginning 0)))
+          (earl-goto-previous-blank-line)))
+    (earl-goto-previous-blank-line)))
+
+(defun earl-next-blank-line ()
   "Moves to the next line containing nothing but whitespace.
-   If several of these lines together, then treat them all as one.
+   If several of these lines together, then treat them all - except the one furtherst away - as one.
    If none are found, then move to end-of-buffer"
   (interactive)
-  (forward-line)
-  (if (search-forward-regexp "^[ \t]*\n" (point-max) t)
+  (if (earl-current-line-empty)
       (progn
-        (forward-line -1) (beginning-of-line) (backward-char) (beginning-of-line)
-        (if (not (looking-at-p "\\(^[ \t]*\n\\)*\\'"))
-            (if (looking-at-p "^[ \t]*\n")
-                (progn (end-of-line) (forward-char)
-                       (end-of-line) (forward-char)
-                       (if (not (looking-at-p "^[ \t]*\n"))
-                           (progn (backward-char) (beginning-of-line) (back-to-indentation))
-                         (progn (backward-char) (beginning-of-line) (next-blank-line) (back-to-indentation))))
-              (progn (end-of-line) (forward-char) (back-to-indentation)))
-          (goto-char (point-max))))
-    (goto-char (point-max))))
+        (next-line) 
+        (if (earl-current-line-empty)
+            (progn (loop do (next-line) while (looking-at "[[:space:]]*$")) (goto-char (match-beginning 0)))
+          (earl-goto-next-blank-line)))
+    (earl-goto-next-blank-line)))
 
 (defun append-as-kill ()
   "Performs copy-region-as-kill as an append."
@@ -3883,7 +3883,7 @@ is called as a function to find the defun's end."
   "Updates the tag file
    Always working from local directory"
   (interactive)
-  (setq earl-ctags-compiler nil) (setq earl-ctags-source-files nil) (setq earl-ctags-library-files nil) (setq earl-ctags-working-directory)
+  (setq earl-ctags-compiler nil) (setq earl-ctags-source-files nil) (setq earl-ctags-library-files nil) (setq earl-ctags-working-directory nil)
   (setq current-directory default-directory)
   (message " ") (message "---- Updating the tags file")
   (let ((i 0))
@@ -3963,7 +3963,7 @@ is called as a function to find the defun's end."
   (cd current-directory))
 
 ;; Toggle whether or not you want to build the tags file after a successful compilation without warnings
-(setq earl-build-tags-file-after-successful-compilation t)
+(setq earl-build-tags-file-after-successful-compilation nil)
 
 (defun earl-build-tags-file-after-successful-compilation ()
   "Toggle whether or not to close the compile buffer automatically when successful without warnings"
@@ -3981,18 +3981,7 @@ is called as a function to find the defun's end."
   "Uppon successful compilation without warnings update the tag file"
   (interactive)
   (if (eq earl-build-tags-file-after-successful-compilation t)
-      (if (and
-           (string-match "compilation" (buffer-name buffer))
-           (string-match "finished" string)
-           (not
-            (or
-             (with-current-buffer buffer
-               (goto-char (point-min))
-               (search-forward "error" nil t)) ;; Could change this with a regexp: "error\|warning", search-forward-regexp
-             (with-current-buffer buffer
-               (goto-char (point-min))
-               (search-forward "warning" nil t)))))
-          (earl-update-tag-file))))
+      (if (earl-compilation-successfull buffer string) (earl-update-tag-file))))
 (add-hook 'compilation-finish-functions 'earl-update-tag-file-on-successful-compilation)
 
 ;;; View tags other window
@@ -4504,9 +4493,9 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;;************************
 
 (define-key evil-normal-state-map "i" 'previous-line)
-(define-key evil-normal-state-map "I" 'previous-blank-line)
+(define-key evil-normal-state-map "I" 'earl-previous-blank-line)
 (define-key evil-normal-state-map "k" 'next-line)
-(define-key evil-normal-state-map "K" 'next-blank-line)
+(define-key evil-normal-state-map "K" 'earl-next-blank-line)
 (define-key evil-normal-state-map "j" 'backward-char)
 (define-key evil-normal-state-map "J" 'backward-word)
 (define-key evil-normal-state-map "l" 'forward-char)
