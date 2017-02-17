@@ -125,6 +125,17 @@
 
 ;;***************************************
 ;;
+;; Adaptive Wrap
+;;
+;;***************************************
+
+;; NOTE: This package resides in the elpa folder together with evil mode
+;;       ~/.emacs.d/elpa/
+;; Makes sure indented wraped lines stay indented
+(require 'adaptive-wrap)
+
+;;***************************************
+;;
 ;; Misc
 ;;
 ;;***************************************
@@ -2124,6 +2135,9 @@ See both toggle-frame-maximized and its following if statement."
   ;; Word-wrap in text mode
   (visual-line-mode)
   
+  ;; Keep indented word wrapped lines indented
+  (adaptive-wrap-prefix-mode)
+  
   ;;; Line highlighting
   ;;; NOTE this get's overridden by global-hl-line-mode for some reason
   ;;;      hl-line-mode is supposed to be for the local mode and this should work
@@ -3962,8 +3976,44 @@ is called as a function to find the defun's end."
         (message (concat (concat "Error updating the tags file: couldn't find \"" casey-makescript) "\""))))
   (cd current-directory))
 
+;;**************************************************************
+;;
+;; Simple Ctags system
+;;
+;;**************************************************************
+
+(setq earl-update-simple-tag-file-process nil)
+(setq earl-update-simple-tag-file-timer nil)
+(setq earl-update-simple-tag-file-process-name "earl-update-simple-tag-file-process-name")
+(setq earl-update-simple-tag-file-buffer-name "earl-update-simple-tag-file-buffer-name")
+
+(defun earl-start-simple-tag-file-process ()
+  (earl-start-process-shell-command
+   'earl-update-simple-tag-file-process 'earl-update-simple-tag-file-process-name 'earl-update-simple-tag-file-buffer-name
+   '(lambda () (interactive) "ctags -e -R --c++-kinds=+p --fields=+iaS --extra=+q *.cpp *.hpp *.c *.h")
+   nil nil 'earl-update-simple-tag-file-timer
+   'earl-handle-ctags-output))
+
+(defun earl-update-simple-tag-file ()
+  "Creates a simple tags file"
+  (interactive)
+  (let ((starting-directory default-directory))
+    (if (earl-find-file-recursively casey-makescript)
+        (progn (earl-start-simple-tag-file-process) (earl-register-local-tags-file))
+      (message "Could not find the file %s from directory %s" casey-makescript starting-directory))
+    (cd starting-directory)))
+
+;;**************************************************************
+;;
+;; End of Simple Ctags system
+;;
+;;**************************************************************
+
 ;; Toggle whether or not you want to build the tags file after a successful compilation without warnings
-(setq earl-build-tags-file-after-successful-compilation nil)
+(setq earl-build-tags-file-after-successful-compilation t)
+
+;; Toggle whether or not you want to use the simple ctags system
+(setq earl-simple-ctags-system t)
 
 (defun earl-build-tags-file-after-successful-compilation ()
   "Toggle whether or not to close the compile buffer automatically when successful without warnings"
@@ -3976,12 +4026,24 @@ is called as a function to find the defun's end."
       (setq earl-build-tags-file-after-successful-compilation t)
       (message "Building tags file after successful compilation"))))
 
+(defun earl-simple-ctags-system ()
+  "Toggle whether or not you want to use the simple ctags system"
+  (interactive)
+  (if (eq earl-simple-ctags-system t)
+      (progn
+        (setq earl-simple-ctags-system nil)
+        (message "Not using the simple Ctags system"))
+    (progn
+      (setq earl-simple-ctags-system t)
+      (message "Using the simple Ctags system"))))
+
 ;; Update the tags file uppon successful compilation without warnings
 (defun earl-update-tag-file-on-successful-compilation (buffer string)
   "Uppon successful compilation without warnings update the tag file"
   (interactive)
   (if (eq earl-build-tags-file-after-successful-compilation t)
-      (if (earl-compilation-successfull buffer string) (earl-update-tag-file))))
+      (if (earl-compilation-successfull buffer string)
+          (if earl-simple-ctags-system (earl-update-simple-tag-file) (earl-update-tag-file)))))
 (add-hook 'compilation-finish-functions 'earl-update-tag-file-on-successful-compilation)
 
 ;;; View tags other window
@@ -4237,11 +4299,11 @@ is called as a function to find the defun's end."
 
 (setq earl-project-file "setup.prj")
 
-(defun earl-find-project-file ()
-  "Recursively search for a project file."
-  (if (file-exists-p earl-project-file) t
+(defun earl-find-file-recursively (file)
+  "Recursively search for a file."
+  (if (file-exists-p file) t
     (if (or (string-match "^[a-zA-Z]:/$" default-directory) (string= default-directory "/")) nil
-      (progn (cd "../") (earl-find-project-file)))))
+      (progn (cd "../") (earl-find-file-recursively file)))))
 
 (defun earl-load-project-from-project-file (file)
   "Loads a project from a project file"
@@ -4273,7 +4335,7 @@ is called as a function to find the defun's end."
   "Loads an entire project as described in the projects setup.prj file"
   (let ((previous-directory default-directory))
     (cd path)
-    (if (earl-find-project-file)
+    (if (earl-find-file-recursively earl-project-file)
         (earl-load-project-from-project-file (concat default-directory earl-project-file))
       (message "Found no setup.prj file in directory: %s" path))
     (cd previous-directory)))
@@ -4294,6 +4356,28 @@ is called as a function to find the defun's end."
   "Loads a project in current directory or one of the parent directories"
   (interactive)
   (earl-load-project-backend default-directory))
+
+;;**************************************************************
+;;
+;; Files and Directories
+;;
+;;**************************************************************
+
+;; Find file in directory without knowing exactly where it is
+;; Looks recursivelly inwards in DIR searching for file matching PATTERN
+;; (find-name-dired DIR PATTERN)
+
+;; Delete File
+;; (delete-file FILENAME &optional TRASH)
+
+;; Create Directory
+;; (make-directory DIR &optional PARENTS)
+
+;; Copy Directory
+;; (copy-directory DIRECTORY NEWNAME &optional KEEP-TIME PARENTS COPY-CONTENTS)
+
+;; Delete Directory
+;; (delete-directory DIRECTORY &optional RECURSIVE TRASH)
 
 ;;***********************************************************************************************************************************
 ;;
@@ -4604,17 +4688,18 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;;*****************************************
 
 (define-key evil-normal-state-map "`" 'imenu)
-(define-key evil-normal-state-map "F" 'find-tag)
-(define-key evil-normal-state-map "\"" (lambda () (interactive)
-                                         (let ((current-prefix-arg 4)) ;; emulate C-u
-                                           (call-interactively 'find-tag)))) ;; Find next tag
-(define-key evil-normal-state-map "£" (lambda () (interactive)
-                                        (let ((current-prefix-arg '-)) ;; emulate C-u -
-                                          (call-interactively 'find-tag)))) ;; Find previous tag
-(define-key evil-normal-state-map "$" 'tags-apropos)
-(define-key evil-normal-state-map "%" 'tags-query-replace)
-(define-key evil-normal-state-map "G" 'view-tag-other-window) ;; find-tag-other-window without moving point
-(define-key evil-normal-state-map "X" 'pop-tag-mark)
+(define-key evil-normal-state-map "F" 'xref-find-definitions)                     ;; find-tag
+(define-key evil-normal-state-map "G" 'xref-find-definitions-other-window)        ;; find-tag-other-window without moving point, view-tag-other-window
+(define-key evil-normal-state-map "$" 'xref-find-apropos)                         ;; tags-apropos
+(define-key evil-normal-state-map "%" 'xref-query-replace-in-results)             ;; tags-query-replace, xref-query-replace-in-results
+(define-key evil-normal-state-map "X" 'xref-pop-marker-stack)                     ;; pop-tag-mark
+
+;; (define-key evil-normal-state-map "\"" (lambda () (interactive)
+;;                                          (let ((current-prefix-arg 4))            ;; emulate C-u
+;;                                            (call-interactively 'find-tag))))      ;; Find next tag
+;; (define-key evil-normal-state-map "£" (lambda () (interactive)
+;;                                         (let ((current-prefix-arg '-))            ;; emulate C-u -
+;;                                           (call-interactively 'find-tag))))       ;; Find previous tag
 
 ;; find-tag-regexp, tags-search, 
 ;; find next tag regexp (lambda () (interactive) (let ((current-prefix-arg 4)) (call-interactively 'find-tag-regexp)))
