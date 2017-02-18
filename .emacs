@@ -368,6 +368,55 @@
 ;;
 ;;=============================================================================================================
 
+;;==============================================================================================================
+;;
+;; Earl's colors
+;;
+;;**************************************************************************************************************
+
+;; Custom light scheme
+;; -------------------------------
+(defconst earl-color-light-text "#171519")
+(defconst earl-color-light-background "#d7d7d7") ; "#d3d3d3"
+(defconst earl-color-light-green "#009000") ; "#008000"
+(defconst earl-color-light-blue "#167bc2")
+(defconst earl-color-light-red "#ff322f")
+
+;; Solarized color scheme
+;; -------------------------------
+(defconst earl-color-sol-base03 "#002b36")
+(defconst earl-color-sol-base02 "#073642")
+(defconst earl-color-sol-base01 "#586e75")
+(defconst earl-color-sol-base00 "#657b83")
+(defconst earl-color-sol-base0 "#839496")
+(defconst earl-color-sol-base1 "#93a1a1")
+(defconst earl-color-sol-base2 "#eee8d5")
+(defconst earl-color-sol-base3 "#fdf6e3")
+(defconst earl-color-sol-yellow "#b58900")
+(defconst earl-color-sol-orange "#cb4b16")
+(defconst earl-color-sol-red "#dc322f")
+(defconst earl-color-sol-magenta "#d33682")
+(defconst earl-color-sol-violet "#6c71c4")
+(defconst earl-color-sol-blue "#268bd2")
+(defconst earl-color-sol-cyan "#2aa198")
+(defconst earl-color-sol-green "#859900")
+
+;; Color variables
+;; -------------------------------
+(setq earl-color-text earl-color-sol-base00)
+(setq earl-color-comment earl-color-sol-green)
+(setq earl-color-type earl-color-sol-blue)
+(setq earl-color-string earl-color-sol-cyan)
+(setq earl-color-keyword earl-color-sol-orange)
+(setq earl-color-emphasized earl-color-sol-base01)
+(setq earl-color-cursor earl-color-emphasized)
+(setq earl-color-background earl-color-sol-base3)
+(setq earl-color-hl-line earl-color-sol-base2)
+(setq earl-color-todo earl-color-sol-red)
+(setq earl-color-study earl-color-sol-yellow)
+(setq earl-color-important earl-color-sol-magenta)
+(setq earl-color-note earl-color-sol-blue)
+
 ;;=============================================================================================================
 ;;
 ;; Font type and size
@@ -491,6 +540,20 @@ See both toggle-frame-maximized and its following if statement."
 (global-set-key (kbd "<M-C-S-wheel-down>") '(lambda () (interactive) (text-scale-adjust -0.5)))
 (global-set-key (kbd "<M-C-S-mouse-5>") '(lambda () (interactive) (text-scale-adjust 0)))
 (global-set-key (kbd "<M-C-mouse-5>") '(lambda () (interactive) (text-scale-adjust 0)))
+
+(setq earl-tiny-text-mode-toggle nil)
+
+(defun earl-tiny-text-mode ()
+  (interactive)
+  (if earl-tiny-text-mode-toggle
+      (progn (text-scale-adjust -8)
+             (set-face-background 'hl-line "#000000")
+             (message "Tiny text mode enabled")
+             (setq earl-tiny-text-mode-toggle nil))
+    (progn (text-scale-adjust 0)
+           (set-face-background 'hl-line earl-color-hl-line)
+           (message "Tiny text mode disabled")
+           (setq earl-tiny-text-mode-toggle t))))
 
 ;;==============================================================================================================
 ;;
@@ -635,55 +698,6 @@ See both toggle-frame-maximized and its following if statement."
 
 ;; Highlight numbers in C
 (add-hook 'c-mode-common-hook 'earl-c-number-highlighting-hook)
-
-;;==============================================================================================================
-;;
-;; Earl's colors
-;;
-;;**************************************************************************************************************
-
-;; Custom light scheme
-;; -------------------------------
-(defconst earl-color-light-text "#171519")
-(defconst earl-color-light-background "#d7d7d7") ; "#d3d3d3"
-(defconst earl-color-light-green "#009000") ; "#008000"
-(defconst earl-color-light-blue "#167bc2")
-(defconst earl-color-light-red "#ff322f")
-
-;; Solarized color scheme
-;; -------------------------------
-(defconst earl-color-sol-base03 "#002b36")
-(defconst earl-color-sol-base02 "#073642")
-(defconst earl-color-sol-base01 "#586e75")
-(defconst earl-color-sol-base00 "#657b83")
-(defconst earl-color-sol-base0 "#839496")
-(defconst earl-color-sol-base1 "#93a1a1")
-(defconst earl-color-sol-base2 "#eee8d5")
-(defconst earl-color-sol-base3 "#fdf6e3")
-(defconst earl-color-sol-yellow "#b58900")
-(defconst earl-color-sol-orange "#cb4b16")
-(defconst earl-color-sol-red "#dc322f")
-(defconst earl-color-sol-magenta "#d33682")
-(defconst earl-color-sol-violet "#6c71c4")
-(defconst earl-color-sol-blue "#268bd2")
-(defconst earl-color-sol-cyan "#2aa198")
-(defconst earl-color-sol-green "#859900")
-
-;; Color variables
-;; -------------------------------
-(setq earl-color-text earl-color-sol-base00)
-(setq earl-color-comment earl-color-sol-green)
-(setq earl-color-type earl-color-sol-blue)
-(setq earl-color-string earl-color-sol-cyan)
-(setq earl-color-keyword earl-color-sol-orange)
-(setq earl-color-emphasized earl-color-sol-base01)
-(setq earl-color-cursor earl-color-emphasized)
-(setq earl-color-background earl-color-sol-base3)
-(setq earl-color-hl-line earl-color-sol-base2)
-(setq earl-color-todo earl-color-sol-red)
-(setq earl-color-study earl-color-sol-yellow)
-(setq earl-color-important earl-color-sol-magenta)
-(setq earl-color-note earl-color-sol-blue)
 
 ;;==============================================================================================================
 ;;
@@ -4671,7 +4685,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "P" (lambda () (interactive) (scroll-down 24)))
 (define-key evil-normal-state-map ":" (lambda () (interactive) (scroll-up 24)))
 
-(setq hscroll-margin 5) ; controls how close point can get to left/right edges before scrolling
+(setq hscroll-margin 1) ; NOTE(earl): This one gets set further down in the emacs section
 ;; (setq hscroll-step 50) ; controls how many columns to scroll the window when point too close to edge, default = center point
 (define-key evil-normal-state-map "O" (lambda () (interactive) (scroll-left 64 64)))
 (define-key evil-normal-state-map "U" (lambda () (interactive) (scroll-right 64 64)))
@@ -4823,6 +4837,9 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;; Loading project
 (define-key evil-normal-state-map [f12] 'earl-load-project)
 (define-key evil-insert-state-map [f12] 'earl-load-project)
+
+;; Overview mode
+(define-key evil-normal-state-map "^" 'earl-tiny-text-mode)
 
 ;;*****************************************
 ;;
