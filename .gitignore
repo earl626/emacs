@@ -1,3 +1,14 @@
+# =========================
+# Elisp
+# =========================
+
+# .emacs.d
+.emacs.d
+
+# =========================
+# Windows
+# =========================
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db

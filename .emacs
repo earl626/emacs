@@ -14,8 +14,6 @@
 ;;;     - Emacs real time markdown viewer (necessary?)
 ;;;     - Emacs Multiple Cursors (https://github.com/magnars/multiple-cursors.el)
 ;;;     - Video to Watch: https://www.youtube.com/watch?v=5FQwQ0QWBTU
-;;;     - Easy find file in project (https://www.emacswiki.org/emacs/FindFileInProject)
-;;;       Don't need to know where it is, just get it for me
 ;;;     - Git (https://www.emacswiki.org/emacs/Git)
 ;;;       (https://www.emacswiki.org/emacs/Magit)
 ;;;       (https://github.com/magit/magit)
@@ -34,6 +32,7 @@
 ;;;           If yes it locates the config-file (.emacs), if no previous entries creates a new list with unique
 ;;;           name, otherwise adds to an allready existing list (as long as entry is not allready member)
 ;;;     - Google search / Dictionary search in Emacs?
+;;;     - Emacs Tree View, Project Hierarchy View (not necessary?)
 ;;;     - Emacs Custom Mode Line
 
 ;;; STUDY(earl):
@@ -133,6 +132,25 @@
 ;;       ~/.emacs.d/elpa/
 ;; Makes sure indented wraped lines stay indented
 (require 'adaptive-wrap)
+
+;;***************************************
+;;
+;; Company Mode
+;;
+;;***************************************
+
+;; NOTE: This package resides in the elpa folder together with evil mode
+;;       ~/.emacs.d/elpa/
+;; Company is a text completion framework for Emacs.
+;; It uses pluggable back-ends and front-ends to retrieve and display completion candidates.
+;; ctags shitty backend for autocompletion,
+;; switching to other backend to much work, ctags good enough for finding what I need
+;; so not currently using this, only have it here to remind me of with-eval-after-load
+
+(with-eval-after-load "company"
+  (defun earl-company-mode-hook ()
+    (company-mode))
+  (add-hook 'c++-mode-hook 'earl-company-mode-hook))
 
 ;;***************************************
 ;;
@@ -1550,6 +1568,7 @@ See both toggle-frame-maximized and its following if statement."
  '(kept-old-versions 5)
  '(make-backup-file-name-function (quote ignore))
  '(make-backup-files nil)
+ '(backup-inhibited t)
  '(mouse-wheel-follow-mouse nil)
  '(mouse-wheel-progressive-speed nil)
  '(mouse-wheel-scroll-amount (quote (15)))
@@ -2218,7 +2237,7 @@ See both toggle-frame-maximized and its following if statement."
 
 ;;**************************************************************
 ;;
-;; Window splitting
+;; Window splitting, Window Organization
 ;;
 ;;**************************************************************
 
@@ -2226,6 +2245,12 @@ See both toggle-frame-maximized and its following if statement."
     "Never, ever split a window. Why would anyone EVER want you to do that??"
   nil)
 (setq split-window-preferred-function 'casey-never-split-a-window)
+
+;; Display the *Completions* buffer in the inactive side window, not a new temporary window at the bottom
+(push '("\\*Completions\\*"
+        (display-buffer-use-some-window display-buffer-pop-up-window)
+        (inhibit-same-window . t))
+      display-buffer-alist)
 
 ;;**************************************************************
 ;;
@@ -3326,6 +3351,13 @@ is called as a function to find the defun's end."
           isearch-message (mapconcat 'isearch-text-char-description istring ""))
     (isearch-search-and-update)))
 
+(setq isearch-allow-scroll t)
+
+(defun earl-isearch-exit-recenter ()
+  (interactive)
+  (isearch-exit)
+  (recenter))
+
 ;;**************************************************************
 ;;
 ;; Debugging, Debugger mode
@@ -3411,6 +3443,9 @@ is called as a function to find the defun's end."
 ;;
 ;;**************************************************************
 
+;; NOTE NOTE(earl): It might be better to run this system after a user saves their file, not on compilation
+;;                  compilation-finish-functions, after-save-hook
+
 ;; NOTE(earl): - Simple CTags commands: "ctags -e -R *.cpp *.hpp *.h" (target fire)
 ;;                                      "ctags -e -R ." (fire everything!)
 
@@ -3459,6 +3494,8 @@ is called as a function to find the defun's end."
 ;;              A possible solution to this is to set it each time the user tries to find a tag
 ;;              Move out of the buffers local directory, checking each directory in search of the tags file
 ;;              Once found set tags-file-name equal to it and then initiate find-tag
+;;              NOTE(earl): The purpose to use multiple tag files in sub-folders instead of one tag file
+;;                          in root folder is to scan less code files.
 
 ;; NOTE(earl):  Currently using tags-table-list
 ;;              tags-table-list works by storing tag-files received from earl-add-tags-table
@@ -4370,6 +4407,15 @@ is called as a function to find the defun's end."
 ;; Delete File
 ;; (delete-file FILENAME &optional TRASH)
 
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (when filename
+      (delete-file filename)
+      (message "Deleted file %s" filename)
+      (kill-buffer))))
+
 ;; Create Directory
 ;; (make-directory DIR &optional PARENTS)
 
@@ -4378,6 +4424,19 @@ is called as a function to find the defun's end."
 
 ;; Delete Directory
 ;; (delete-directory DIRECTORY &optional RECURSIVE TRASH)
+
+;;**************************************************************
+;;
+;; Calculator
+;;
+;;**************************************************************
+
+(defun calc-eval-region (beg end)
+  "Eval the arithmetic expression in the region and replace it with the result"
+  (interactive "r")
+  (let ((val (calc-eval (buffer-substring beg end))))
+    (delete-region beg end)
+    (insert val)))
 
 ;;***********************************************************************************************************************************
 ;;
@@ -4629,6 +4688,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "S" 'isearch-backward) ;; isearch-forward-regexp
 (define-key isearch-mode-map "\t" 'isearch-repeat-forward)
 (define-key isearch-mode-map [S-tab] 'isearch-repeat-backward)
+(define-key isearch-mode-map [return] 'earl-isearch-exit-recenter)
 
 (eval-after-load "isearch"
   '(define-key isearch-mode-map (kbd "C-<tab>") 'isearch-dabbrev-expand))
@@ -4693,6 +4753,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "$" 'xref-find-apropos)                         ;; tags-apropos
 (define-key evil-normal-state-map "%" 'xref-query-replace-in-results)             ;; tags-query-replace, xref-query-replace-in-results
 (define-key evil-normal-state-map "X" 'xref-pop-marker-stack)                     ;; pop-tag-mark
+(define-key evil-normal-state-map "£" 'xref-find-references)
 
 ;; (define-key evil-normal-state-map "\"" (lambda () (interactive)
 ;;                                          (let ((current-prefix-arg 4))            ;; emulate C-u
@@ -4716,7 +4777,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
 ;; (define-key evil-normal-state-map "^" 'electric-pair-mode) ;; Toggle Auto Paren mode on and off. Probably don't need it...
 
-(define-key evil-normal-state-map "\\" 'quick-calc)
+(define-key evil-normal-state-map "\\" 'quick-calc) ;; calc-eval-region
 (define-key evil-normal-state-map "z" 'grep)
 (define-key evil-normal-state-map "¬" 'eshell) ;; 'shell, 'term, 'eshell
 (define-key evil-normal-state-map "!" 'universal-argument)
