@@ -546,13 +546,13 @@ See both toggle-frame-maximized and its following if statement."
 (defun earl-tiny-text-mode ()
   (interactive)
   (if earl-tiny-text-mode-toggle
-      (progn (text-scale-adjust -8)
-             (set-face-background 'hl-line "#000000")
-             (message "Tiny text mode enabled")
+      (progn (text-scale-adjust 0)
+             (set-face-background 'hl-line earl-color-hl-line)
+             (message "Tiny text mode disabled")
              (setq earl-tiny-text-mode-toggle nil))
-    (progn (text-scale-adjust 0)
-           (set-face-background 'hl-line earl-color-hl-line)
-           (message "Tiny text mode disabled")
+    (progn (text-scale-adjust -8)
+           (set-face-background 'hl-line earl-color-text)
+           (message "Tiny text mode enabled")
            (setq earl-tiny-text-mode-toggle t))))
 
 ;;==============================================================================================================
