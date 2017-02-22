@@ -19,6 +19,7 @@
 ;;;       (https://github.com/magit/magit)
 ;;;       (https://magit.vc/)
 ;;;     - Emacs AutoComplete (emacs autocomplete, dropdownlist)
+;;;       Write your own c-parser and have emacs use it for autocompletion
 ;;;     - Python???
 ;;;     - Review this .emacs file with extra concern for memory consumption, and general performance
 ;;;       NOTE(ear):
@@ -167,6 +168,9 @@
 
 ;; Require the ido-package
 (require 'ido)
+
+;; Require xref
+(require 'xref)
 
 ;;*************************************************************************************************************
 ;;
@@ -1121,14 +1125,14 @@ See both toggle-frame-maximized and its following if statement."
   (setq earl-color-comment earl-color-sol-base00) ;; earl-color-sol-base00, earl-color-sol-base0
   (setq earl-color-type earl-color-sol-blue)
   (setq earl-color-string earl-color-sol-green)
-  (setq earl-color-keyword earl-color-sol-orange)
+  (setq earl-color-keyword earl-color-sol-red) ;; earl-color-sol-orange
   (setq earl-color-emphasized earl-color-sol-base03) ;; earl-color-sol-base03, earl-color-sol-base02
   (setq earl-color-cursor earl-color-emphasized)
   (setq earl-color-background earl-color-sol-base3)
   (setq earl-color-hl-line earl-color-sol-base2) ;; earl-color-sol-base2 "#ffffff" earl-color-background
   (setq earl-color-todo earl-color-sol-red)
-  (setq earl-color-study earl-color-sol-yellow)
-  (setq earl-color-important earl-color-sol-magenta)
+  (setq earl-color-study earl-color-sol-blue) ;; earl-color-sol-yellow
+  (setq earl-color-important earl-color-sol-red) ;; earl-color-sol-magenta
   (setq earl-color-note earl-color-sol-blue)
   
   ;; Line highlighting, selection highlighting
@@ -2738,8 +2742,8 @@ killed."
 (setq ediff-window-setup-function 'casey-ediff-setup-windows)
 (setq ediff-split-window-function 'split-window-horizontally)
 
-;;; Easy fix for 'find-file-other-window' and 'ido-switch-buffer-other-window'
-;;; When 1 window they open into a completely new frame, this shit fixes that
+;;; NOTE(earl): Easy fix for 'find-file-other-window' and 'ido-switch-buffer-other-window'
+;;;             When 1 window they open into a completely new frame, this shit fixes that
 
 (defun earl-find-file-other-window (filename &optional wildcards)
   "If one window, then split window, then do 'find-file-other-window'"
@@ -2750,10 +2754,22 @@ killed."
   (find-file-other-window filename wildcards))
 
 (defun earl-ido-switch-buffer-other-window ()
+  "Do 'ido-switch-buffer-other-window', if one window then delete frame and create window to display buffer"
+  (interactive)
+  (ido-switch-buffer-other-window)
+  (if (= (count-windows) 1)
+      (let ((result (current-buffer)))
+        (delete-frame)
+        (split-window-horizontally)
+        (switch-to-buffer-other-window result))))
+
+(defun earl-ido-switch-buffer-other-window-old ()
   "If one window, then split window, then do 'ido-switch-buffer-other-window'"
   (interactive)
   (if (= (count-windows) 1) (split-window-horizontally))
   (ido-switch-buffer-other-window))
+
+;; NOTE(earl): ido-display-buffer - Display a buffer in another window but don’t select it.
 
 ;;Defines a function that splits the emacs window
 (defun split-window-multiple-ways (x y)
@@ -4761,13 +4777,85 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;;
 ;;*****************************************
 
+(setq earl-xref-find-definitions-other-window-var nil)
+
+(defun earl-xref-goto-xref ()
+  (interactive)
+  (if earl-xref-find-definitions-other-window-var
+      (progn (xref-goto-xref)
+             (let ((result (current-buffer))) (switch-to-prev-buffer) (switch-to-buffer-other-window result)))
+    (if (= (count-windows) 1)
+        (progn
+          (split-window-horizontally)
+          (xref-goto-xref)
+          (switch-to-buffer-other-window (current-buffer))
+          (delete-other-windows))
+      (progn
+      (other-window 1)
+      (let ((other-previous-buffer-point (point))
+            (other-previous-buffer (current-buffer)))
+        (other-window 1)
+        (xref-goto-xref)
+        (let ((result (current-buffer)))
+          (switch-to-buffer other-previous-buffer)
+          (switch-to-buffer-other-window result)
+          (other-window 1) (goto-char other-previous-buffer-point) (other-window 1)))))))
+
+(defun xref--find-definitions (id display-action)
+  "    Used by xref-find-definitions, xref-find-definitions-other-window and xref-find-definitions-other-frame
+    IMPORTANT(earl):
+       This function is rewritten in my .emacs file. NB! This could cause trouble!
+    I rewrote this function because I wanted to change the behaviour of xref when trying to find a definition (xref-find-definitions)
+    and xref returning multiple possible matches back in a buffer called xref. The xref buffer would display and
+    consquently hide one of my buffers and then stay there even when it had helped me find what I was looking for.
+    I wanted it to hide automatically by itself. Another annoyance was that finding a definition in another window
+    would open in the current window when multiple matches prompted the xref buffer. The xref buffer would pop up
+    in the other window and stay there. I wanted to streamline this so I wouldn't have to manually correct
+    which buffers were displaying.
+       A simple solution to this would be to add simple window commands to when I selected a match in the xref buffer (earl-xref-goto-xref).
+    These window commands would take care of everything I would need to do manually. This system would need to
+    know in what window to display the definition i chose, so I created a simple global variable to keep track of this.
+    Now I only needed to tweak xref-find-definitions and xref-find-definitions-other-window in such a way that they
+    would set this global variable when called uppon. This however changed their behaviour, and I still don't understand
+    why. To me it seems like I've come across some sort of bug, but statistically speaking it's probably me.
+    I will point out though that i coppied the original functions word by word - only changing the name
+    of these functions to include the prefix 'earl-' (indicating my functions) - and that was enough to change
+    the behaviour. I have no explanation for this."
+  (let ((xrefs (funcall (intern (format "xref-backend-%s" 'definitions)) ;; (if (cdr xrefs) == If multiple definitions found (opens a xref buffer)
+                        (xref-find-backend)
+                        id)))  
+    (if display-action
+        (progn
+          (setq earl-xref-find-definitions-other-window-var t)
+          (if (= (count-windows) 1)
+              (progn
+                (split-window-horizontally)
+                (xref--find-xrefs id 'definitions id display-action) ;; IMPORTANT
+                (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
+                    (progn (switch-to-prev-buffer) (switch-to-buffer-other-window "*xref*"))))
+            (xref--find-xrefs id 'definitions id display-action))) ;; IMPORTANT
+      (progn
+        (setq earl-xref-find-definitions-other-window-var nil)
+        (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
+            (if (= (count-windows) 1)
+                (progn
+                  (split-window-horizontally)
+                  (xref--find-xrefs id 'definitions id display-action) ;; IMPORTANT
+                  (delete-other-windows))
+              (progn
+                (xref--find-xrefs id 'definitions id display-action) ;; IMPORTANT
+                (switch-to-prev-buffer)
+                (switch-to-buffer-other-window "*xref*")))
+          (xref--find-xrefs id 'definitions id display-action)))))) ;; IMPORTANT
+
 (define-key evil-normal-state-map "`" 'imenu)
 (define-key evil-normal-state-map "F" 'xref-find-definitions)                     ;; find-tag
 (define-key evil-normal-state-map "G" 'xref-find-definitions-other-window)        ;; find-tag-other-window without moving point, view-tag-other-window
 (define-key evil-normal-state-map "$" 'xref-find-apropos)                         ;; tags-apropos
-(define-key evil-normal-state-map "%" 'xref-query-replace-in-results)             ;; tags-query-replace, xref-query-replace-in-results
+(define-key evil-normal-state-map "%" 'tags-query-replace)                        ;; tags-query-replace, xref-query-replace-in-results
 (define-key evil-normal-state-map "X" 'xref-pop-marker-stack)                     ;; pop-tag-mark
 (define-key evil-normal-state-map "£" 'xref-find-references)
+(define-key xref--button-map [return] 'earl-xref-goto-xref)
 
 ;; (define-key evil-normal-state-map "\"" (lambda () (interactive)
 ;;                                          (let ((current-prefix-arg 4))            ;; emulate C-u
