@@ -1741,8 +1741,8 @@ See both toggle-frame-maximized and its following if statement."
   "Bury a compilation buffer if succeeded without warnings"
   (if (eq earl-close-compile-buffer-automatically t)
       (if (earl-compilation-successfull buffer string)
-          (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 2)
-                 ;; (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-succsess-color earl-mode-line-inactive-color 2)
+          (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
+                 ;; (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-succsess-color earl-mode-line-inactive-color 1)
                  (if (eq earl-close-compile-buffer-with-delay t)
                      (run-with-timer 1 nil
                                      (lambda (buf)
@@ -1756,8 +1756,8 @@ See both toggle-frame-maximized and its following if statement."
                      (let ((compilation-window (get-buffer-window buffer)))
                        (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
                          (kill-buffer buffer))))))
-        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 2)
-               (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 2)
+        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
+               (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
                (if (= (count-windows) 1) (split-window-horizontally))
                (switch-to-buffer-other-window "*compilation*")
                (other-window 1)))))
