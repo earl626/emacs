@@ -2896,6 +2896,12 @@ doc string for `insert-for-yank-1', which see."
 ;;
 ;;**************************************************************
 
+(defun earl-print-elements-of-list (list)
+  "Print each element of LIST on a line of its own."
+  (while list
+    (print (car list))
+    (setq list (cdr list))))
+
 ;; Define alias for yes/no questions
 (defalias 'yes-or-no-p 'y-or-n-p)
 
@@ -4791,15 +4797,41 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
           (switch-to-buffer-other-window (current-buffer))
           (delete-other-windows))
       (progn
-      (other-window 1)
-      (let ((other-previous-buffer-point (point))
-            (other-previous-buffer (current-buffer)))
         (other-window 1)
-        (xref-goto-xref)
-        (let ((result (current-buffer)))
-          (switch-to-buffer other-previous-buffer)
-          (switch-to-buffer-other-window result)
-          (other-window 1) (goto-char other-previous-buffer-point) (other-window 1)))))))
+        (let ((other-previous-buffer-point (point))
+              (other-previous-buffer (current-buffer)))
+          (other-window 1)
+          (xref-goto-xref)
+          (let ((result (current-buffer)))
+            (switch-to-buffer other-previous-buffer)
+            (switch-to-buffer-other-window result)
+            (other-window 1) (goto-char other-previous-buffer-point) (other-window 1)))))))
+
+(defun earl-xref--read-identifier (prompt)
+  "Return the identifier read from the minibuffer."
+  (let* ((backend (xref-find-backend))
+         (id (xref-backend-identifier-at-point backend)))
+    (completing-read (if id
+                         (format "%s (default %s): "
+                                 (substring prompt 0 (string-match
+                                                      "[ :]+\\'" prompt))
+                                 id)
+                       prompt)
+                     (xref-backend-identifier-completion-table backend)
+                     nil nil nil
+                     'xref--read-identifier-history id)))
+
+(defun earl-get-xrefs-argument (identifier)
+  "Without this function xref-find-definitions will search for identifier at point, and when that identifier
+   is something nonsensical - like '00000' - the user will have to move point to a blank space in order to
+   to call xref-find-definitions again and get prompted for a definition. Whatever is at point is blindly sent
+   into the system, and thus the user must move the point in order to get prompted for input.
+   This function solves this by forcing a read from buffer and having xref--find-definitions
+   continuously call it untill a proper identifier is returned by prompting the user."
+  (interactive (list (earl-xref--read-identifier "Find definitions of: ")))
+  (funcall (intern (format "xref-backend-%s" 'definitions))
+           (xref-find-backend)
+           identifier))
 
 (defun xref--find-definitions (id display-action)
   "    Used by xref-find-definitions, xref-find-definitions-other-window and xref-find-definitions-other-frame
@@ -4823,30 +4855,31 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
     the behaviour. I have no explanation for this."
   (let ((xrefs (funcall (intern (format "xref-backend-%s" 'definitions)) ;; (if (cdr xrefs) == If multiple definitions found (opens a xref buffer)
                         (xref-find-backend)
-                        id)))  
+                        id)))
+    (while (not xrefs) (setq xrefs (call-interactively 'earl-get-xrefs-argument))) ;; NOTE xrefs must be valid
     (if display-action
         (progn
           (setq earl-xref-find-definitions-other-window-var t)
           (if (= (count-windows) 1)
               (progn
                 (split-window-horizontally)
-                (xref--find-xrefs id 'definitions id display-action) ;; IMPORTANT
+                (xref--show-xrefs xrefs display-action) ;; IMPORTANT xrefs must be valid
                 (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
                     (progn (switch-to-prev-buffer) (switch-to-buffer-other-window "*xref*"))))
-            (xref--find-xrefs id 'definitions id display-action))) ;; IMPORTANT
+            (xref--show-xrefs xrefs display-action))) ;; IMPORTANT xrefs must be valid
       (progn
         (setq earl-xref-find-definitions-other-window-var nil)
         (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
             (if (= (count-windows) 1)
                 (progn
                   (split-window-horizontally)
-                  (xref--find-xrefs id 'definitions id display-action) ;; IMPORTANT
+                  (xref--show-xrefs xrefs display-action) ;; IMPORTANT xrefs must be valid
                   (delete-other-windows))
               (progn
-                (xref--find-xrefs id 'definitions id display-action) ;; IMPORTANT
+                (xref--show-xrefs xrefs display-action) ;; IMPORTANT xrefs must be valid
                 (switch-to-prev-buffer)
                 (switch-to-buffer-other-window "*xref*")))
-          (xref--find-xrefs id 'definitions id display-action)))))) ;; IMPORTANT
+          (xref--show-xrefs xrefs display-action)))))) ;; IMPORTANT xrefs must be valid
 
 (define-key evil-normal-state-map "`" 'imenu)
 (define-key evil-normal-state-map "F" 'xref-find-definitions)                     ;; find-tag
