@@ -2926,6 +2926,7 @@ doc string for `insert-for-yank-1', which see."
 (ido-mode 'buffers) ;; only use this line to turn off ido for file names!
 (setq ido-ignore-buffers '("^ " "*Completions*" "*Shell Command Output*"
                            "*Messages*" "Async Shell Command"))
+(setq ido-enable-flex-matching t)
 
 (setq compilation-directory-locked nil)
 (scroll-bar-mode -1)
