@@ -2642,6 +2642,59 @@ the current position of point, then move it to the beginning of the line."
 
 ;;-----------------------------
 ;;
+;; Define current line into X chunks and move one chunk at a time
+;;
+;;-----------------------------
+
+(defun earl-backward-line-chunck (chunks)
+  "Define current line into X chunks and move one chunk at a time"
+  (interactive)
+  (let ((current-line-length (- (point-at-eol) (point-at-bol))))
+    (let ((chunk-length (+ (/ current-line-length chunks) 1)))
+      (if (eq (point) (point-at-bol))
+          (backward-char)
+        (if (< (- (point) chunk-length) (point-at-bol))
+            (beginning-of-line)
+          ;; 1. If you are at an index point (e.g. 2) remember to subtract 1 from the current index you are in
+          ;;    If you are not at an index point (e.g. 2.71)
+          ;;    then integer division will be enough to bring you from index 2.71 to 2
+          ;; 2. Figure out distance between poinit-at-bol and point
+          ;; 3. Fiugre out what index you are in by dividing by the chunk-length
+          ;; 4. You want to go to previous index, so depending on the first step, subtract or don't subtract
+          ;; 5. Multiply the index you want to go to with the chunk-length to get how many
+          ;;    characters you want to be moving from the point-at-bol
+          ;; 6. Go there
+          (if (eq (% (- (point) (point-at-bol)) chunk-length) 0)
+              (goto-char (+ (point-at-bol) (* (- (/ (- (point) (point-at-bol)) chunk-length) 1) chunk-length)))
+            (goto-char (+ (point-at-bol) (* (/ (- (point) (point-at-bol)) chunk-length) chunk-length)))))))))
+
+(defun backward-line-chunck ()
+  (interactive)
+  (earl-backward-line-chunck 4))
+
+(defun earl-forward-line-chunck (chunks)
+  "Define current line into X chunks and move one chunk at a time"
+  (interactive)
+  (let ((current-line-length (- (point-at-eol) (point-at-bol))))
+    (let ((chunk-length (+ (/ current-line-length chunks) 1)))
+      (if (eq (point) (point-at-eol))
+          (forward-char)
+        (if (> (+ (point) chunk-length) (point-at-eol))
+            (end-of-line)
+          ;; 1. Figure out distance between point-at-bol and point
+          ;; 2. Fiugre out what index you are in by dividing by the chunk-length
+          ;; 3. You want to go to the next index so add one to the index you are currently in
+          ;; 4. Multiply the index you want to go to with the chunk-length to get how many
+          ;;    characters you want to be moving from the point-at-bol
+          ;; 5. Go there
+          (goto-char (+ (point-at-bol) (* (+ (/ (- (point) (point-at-bol)) chunk-length) 1) chunk-length))))))))
+
+(defun forward-line-chunck ()
+  (interactive)
+  (earl-forward-line-chunck 4))
+
+;;-----------------------------
+;;
 ;; My own newline and indent
 ;;
 ;;-----------------------------
@@ -5240,8 +5293,8 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (global-set-key (kbd "C-c a") 'universal-argument)
 (global-set-key (kbd "C-o") 'end-or-middle-of-line)
 (global-set-key (kbd "C-u") 'beginning-of-indentation-or-line)
-(global-set-key (kbd "M-L") 'forward-sentence)
-(global-set-key (kbd "M-J") 'backward-sentence)
+(global-set-key (kbd "M-L") 'forward-line-chunck)
+(global-set-key (kbd "M-J") 'backward-line-chunck)
 (global-set-key (kbd "M-/") 'forward-or-backward-sexp) ;; Go to the matching parenthesis character if one is adjacent to point.
 (global-set-key (kbd "M-u") 'search-move-backward-paren-opening-and-closing)
 (global-set-key (kbd "M-o") 'search-move-forward-paren-opening-and-closing)
