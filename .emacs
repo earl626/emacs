@@ -5460,7 +5460,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (global-set-key (kbd "C-x C-x") 'goto-line)
 (global-set-key (kbd "C-'") 'imenu)
 (global-set-key (kbd "C-c q") 'quick-calc)
-(global-set-key (kbd "C-x C-a") 'global-hl-line-mode)
+;; (global-set-key (kbd "C-x C-a") 'global-hl-line-mode)
 ;;; C-x i = insert-file
 
 ;; no screwing with my middle mouse button
