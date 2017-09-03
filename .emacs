@@ -6,6 +6,7 @@
 ;;-------------------------------------------------------------------------------------------------------------
 
 ;;; TODO(earl):
+;;;     - Configure GDB to work properly
 ;;;     - Finish CTags (compiler list dependencies, ctags tags file generation)
 ;;;     - Emacs Latex, AUCTEX (https://www.gnu.org/software/auctex/)
 ;;;       Prolly simple enough to just write latex-source in Emacs and view result in browser or something
@@ -1737,9 +1738,10 @@ See both toggle-frame-maximized and its following if statement."
   (interactive)
   (save-some-buffers 1)
   (if (find-project-directory) (compile casey-makescript))
-  (switch-to-prev-buffer) (other-window 1)
-  (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
-;; (earl-set-face-background-and-foreground 'mode-line-inactive earl-mode-line-compilation-in-progress-color)
+  (if (eq earl-close-compile-buffer-automatically t)
+      (progn (switch-to-prev-buffer) (other-window 1)
+             (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
+    (other-window 1)))
 
 (defun casey-big-fun-compilation-hook ()
   (make-local-variable 'truncate-lines)
@@ -4204,7 +4206,7 @@ is called as a function to find the defun's end."
 (defun earl-start-simple-tag-file-process ()
   (earl-start-process-shell-command
    'earl-update-simple-tag-file-process 'earl-update-simple-tag-file-process-name 'earl-update-simple-tag-file-buffer-name
-   '(lambda () (interactive) "ctags -e -R --c++-kinds=+p --fields=+iaS --extra=+q *.cpp *.hpp *.c *.h")
+   '(lambda () (interactive) "ctags -e -R * --c++-kinds=+p --fields=+iaS --extra=+q *.cpp *.hpp *.c *.h")
    nil nil 'earl-update-simple-tag-file-timer
    'earl-handle-ctags-output))
 
@@ -4624,6 +4626,73 @@ is called as a function to find the defun's end."
     (delete-region beg end)
     (insert val)))
 
+;;**************************************************************
+;;
+;; CygWin
+;;
+;;**************************************************************
+
+;; ;; Make sure that the bash executable can be found
+;; (setq explicit-shell-file-name "C:/cygwin64/bin/bash.exe")
+;; (setq shell-file-name explicit-shell-file-name)
+;; (add-to-list 'exec-path "C:/cygwin64/bin")
+
+;;**************************************************************
+;;
+;; Keymaps
+;;
+;;**************************************************************
+
+(defun earl-keymap-symbol (keymap)
+  "Return the symbol to which KEYMAP is bound, or nil if no such symbol exists."
+  (catch 'gotit
+    (mapatoms (lambda (sym)
+                (and (boundp sym)
+                     (eq (symbol-value sym) keymap)
+                     (not (eq sym 'keymap))
+                     (throw 'gotit sym))))))
+
+(defun earl-get-current-keymap ()
+  (interactive)
+  (print (earl-keymap-symbol (current-local-map))))
+
+;;**************************************************************
+;;
+;; Dired Mode
+;;
+;;**************************************************************
+
+(defun earl-dired-mode-hook ()
+  (define-key evil-normal-state-local-map "i" 'previous-line)
+  (define-key evil-normal-state-local-map "I" 'earl-previous-blank-line)
+  (define-key evil-normal-state-local-map "k" 'next-line)
+  (define-key evil-normal-state-local-map "K" 'earl-next-blank-line)
+  (define-key evil-normal-state-local-map "j" 'backward-char)
+  (define-key evil-normal-state-local-map "J" 'backward-word)
+  (define-key evil-normal-state-local-map "l" 'forward-char)
+  (define-key evil-normal-state-local-map "L" 'forward-word)
+  
+  (local-set-key (kbd "<S-up>") 'previous-blank-line)
+  (local-set-key (kbd "<S-left>") 'backward-word)
+  (local-set-key (kbd "<S-down>") 'next-blank-line)
+  (local-set-key (kbd "<S-right>") 'forward-word)
+  
+  (define-key evil-normal-state-local-map "o" 'end-of-line) ;; end-or-middle-of-line
+  (define-key evil-normal-state-local-map "u" 'beginning-of-indentation-or-line)
+  (define-key evil-normal-state-local-map "'" 'forward-or-backward-sexp) ;; Go to the matching parenthesis character if one is adjacent to point.
+  (define-key evil-normal-state-local-map "[" 'search-move-backward-paren-opening-and-closing)
+  (define-key evil-normal-state-local-map "]" 'search-move-forward-paren-opening-and-closing)
+  (define-key evil-normal-state-local-map "{" 'earl-beginning-of-defun)
+  (define-key evil-normal-state-local-map "}" 'earl-end-of-defun)
+  (define-key evil-normal-state-local-map "(" 'backward-up-list)
+  (define-key evil-normal-state-local-map "<" '(lambda () (interactive) (goto-char (point-min)))) ;; beginning-of-buffer
+  (define-key evil-normal-state-local-map ">" '(lambda () (interactive) (goto-char (point-max)))) ;; end-of-buffer
+  
+  (define-key evil-normal-state-local-map "a" 'other-window)
+  (define-key evil-normal-state-local-map "Z" 'kill-this-buffer)
+  )
+(add-hook 'dired-mode-hook 'earl-dired-mode-hook)
+
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
 ;;                                                     Evil Mode
@@ -4938,8 +5007,18 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (defun earl-xref-goto-xref ()
   (interactive)
   (if earl-xref-find-definitions-other-window-var
-      (progn (xref-goto-xref)
-             (let ((result (current-buffer))) (switch-to-prev-buffer) (switch-to-buffer-other-window result)))
+      (progn
+        (other-window 1)                                            ;; Move away from xrefs window
+        (let ((previous-buffer-point (point))                       ;; Store that window point
+             (previous-buffer (current-buffer)))                   ;; Store that window
+          (other-window 1)                                          ;; Move back to xrefs window
+          (xref-goto-xref)
+          (let ((result-point (point))
+                (result (current-buffer)))
+            (switch-to-buffer previous-buffer)
+            (goto-char previous-buffer-point)
+            (switch-to-buffer-other-window result)
+            (goto-char result-point))))
     (if (= (count-windows) 1)
         (progn
           (split-window-horizontally)
