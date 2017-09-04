@@ -1741,7 +1741,9 @@ See both toggle-frame-maximized and its following if statement."
   (if (eq earl-close-compile-buffer-automatically t)
       (progn (switch-to-prev-buffer) (other-window 1)
              (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
-    (other-window 1)))
+    (if (= (count-windows) 1)
+        (switch-to-prev-buffer)
+      (other-window 1))))
 
 (defun casey-big-fun-compilation-hook ()
   (make-local-variable 'truncate-lines)
@@ -1845,7 +1847,14 @@ See both toggle-frame-maximized and its following if statement."
                (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
                (if (= (count-windows) 1) (split-window-horizontally))
                (switch-to-buffer-other-window "*compilation*")
-               (other-window 1)))))
+               (other-window 1)))
+    (if (= (count-windows) 1)
+        (if (earl-compilation-successfull buffer string)
+            (switch-to-buffer "*compilation*")
+          (progn
+            (split-window-horizontally)
+            (switch-to-buffer-other-window "*compilation*")
+            (other-window 1))))))
 (add-hook 'compilation-finish-functions 'earl-bury-compile-buffer-if-successful)
 
 ;;********************************
@@ -2340,23 +2349,6 @@ See both toggle-frame-maximized and its following if statement."
 
 ;;**************************************************************
 ;;
-;; Window splitting, Window Organization
-;;
-;;**************************************************************
-
-(defun casey-never-split-a-window
-    "Never, ever split a window. Why would anyone EVER want you to do that??"
-  nil)
-(setq split-window-preferred-function 'casey-never-split-a-window)
-
-;; Display the *Completions* buffer in the inactive side window, not a new temporary window at the bottom
-(push '("\\*Completions\\*"
-        (display-buffer-use-some-window display-buffer-pop-up-window)
-        (inhibit-same-window . t))
-      display-buffer-alist)
-
-;;**************************************************************
-;;
 ;; C++ mode handling, Indentation, Tab
 ;;
 ;;**************************************************************
@@ -2365,23 +2357,6 @@ See both toggle-frame-maximized and its following if statement."
   (setq c-basic-offset 4)
   (c-set-offset 'substatement-open 0))
 (add-hook 'c++-mode-hook 'my-c++-mode-hook)
-
-;;--------------------------------------------------------------
-;;
-;; Window Commands
-;;
-;;--------------------------------------------------------------
-
-(defun w32-restore-frame ()
-  "Restore a minimized frame"
-  (interactive)
-  (w32-send-sys-command 61728))
-
-(defun maximize-frame ()
-  "Maximize the current frame"
-  (interactive)
-  (when casey-aquamacs (aquamacs-toggle-full-frame))
-  (when casey-win32 (w32-send-sys-command 61488)))
 
 ;;--------------------------------------------------------------
 ;;
@@ -2874,9 +2849,53 @@ killed."
 
 ;;**************************************************************
 ;;
-;; Frame and Window behaviour
+;; Frame and Window behaviour, Window splitting, Window Organization
 ;;
 ;;**************************************************************
+
+(defun casey-never-split-a-window
+    "Never, ever split a window. Why would anyone EVER want you to do that??"
+  nil)
+
+(defun earl-split-window-sensibly (&optional window)
+  (let ((window (or window (selected-window))))
+    (or (and (window-splittable-p window t)
+             ;; Split window horizontally.
+             (with-selected-window window
+               (split-window-right)))
+        (and (eq window (frame-root-window (window-frame window)))
+             (not (window-minibuffer-p window))
+             ;; If WINDOW is the only window on its frame and is not the
+             ;; minibuffer window, try to split it horizontally disregarding
+             ;; the value of `split-width-threshold'.
+             (let ((split-width-threshold 0))
+               (when (window-splittable-p window)
+                 (with-selected-window window
+                   (split-window-right))))))))
+
+;; split-window-preferred-function default value is split-window-sensibly
+;; You can control the behavior of split-window-sensibly by adjusting the variables
+;; split-width-threshold and split-height-threshold
+;; (setq split-width-threshold nil) ;;This tells display-buffer never to split windows horizontally
+(setq split-height-threshold nil) ;;This tells display-buffer never to split windows vertically
+(setq split-window-preferred-function 'earl-split-window-sensibly) ;; casey-never-split-a-window
+
+;; Display the *Completions* buffer in the inactive side window, not a new temporary window at the bottom
+(push '("\\*Completions\\*"
+        (display-buffer-use-some-window display-buffer-pop-up-window)
+        (inhibit-same-window . t))
+      display-buffer-alist)
+
+(defun w32-restore-frame ()
+  "Restore a minimized frame"
+  (interactive)
+  (w32-send-sys-command 61728))
+
+(defun maximize-frame ()
+  "Maximize the current frame"
+  (interactive)
+  (when casey-aquamacs (aquamacs-toggle-full-frame))
+  (when casey-win32 (w32-send-sys-command 61488)))
 
 (defun casey-ediff-setup-windows (buffer-A buffer-B buffer-C control-buffer)
   (ediff-setup-windows-plain buffer-A buffer-B buffer-C control-buffer)
@@ -3031,6 +3050,17 @@ doc string for `insert-for-yank-1', which see."
 	(goto-char (prog1 (mark t)
 		     (set-marker (mark-marker) (point) (current-buffer))))))
   nil)
+
+;;**************************************************************
+;;
+;; Utils
+;;
+;;**************************************************************
+
+(defun current-line-empty-p ()
+  (save-excursion
+    (beginning-of-line)
+    (looking-at "[[:space:]]*$")))
 
 ;;**************************************************************
 ;;
@@ -4440,10 +4470,6 @@ is called as a function to find the defun's end."
 ;;**************************************************************
 
 (defun earl-python-mode-hook ()
-  ;; Make Enter indent for you
-  (define-key evil-normal-state-local-map [return] 'earl-newline-and-indent)
-  (define-key evil-insert-state-local-map [return] 'earl-newline-and-indent)
-  
   (setq earl-close-compile-buffer-automatically nil)
   (setq earl-build-tags-file-after-successful-compilation nil)
   (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point))
@@ -5010,7 +5036,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
       (progn
         (other-window 1)                                            ;; Move away from xrefs window
         (let ((previous-buffer-point (point))                       ;; Store that window point
-             (previous-buffer (current-buffer)))                   ;; Store that window
+              (previous-buffer (current-buffer)))                   ;; Store that window
           (other-window 1)                                          ;; Move back to xrefs window
           (xref-goto-xref)
           (let ((result-point (point))
