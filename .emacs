@@ -1741,9 +1741,9 @@ See both toggle-frame-maximized and its following if statement."
   (if (eq earl-close-compile-buffer-automatically t)
       (progn (switch-to-prev-buffer) (other-window 1)
              (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
-    (if (= (count-windows) 1)
-        (switch-to-prev-buffer)
-      (other-window 1))))
+    (progn
+      (if (= (count-windows) 1) (switch-to-prev-buffer) (other-window 1))
+      (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))))
 
 (defun casey-big-fun-compilation-hook ()
   (make-local-variable 'truncate-lines)
@@ -1848,13 +1848,15 @@ See both toggle-frame-maximized and its following if statement."
                (if (= (count-windows) 1) (split-window-horizontally))
                (switch-to-buffer-other-window "*compilation*")
                (other-window 1)))
-    (if (= (count-windows) 1)
-        (if (earl-compilation-successfull buffer string)
-            (switch-to-buffer "*compilation*")
-          (progn
-            (split-window-horizontally)
-            (switch-to-buffer-other-window "*compilation*")
-            (other-window 1))))))
+    (if (earl-compilation-successfull buffer string)
+        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
+               (if (= (count-windows) 1) (switch-to-buffer "*compilation*")))
+      (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
+             (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
+             (if (= (count-windows) 1)
+                 (progn (split-window-horizontally)
+                        (switch-to-buffer-other-window "*compilation*")
+                        (other-window 1)))))))
 (add-hook 'compilation-finish-functions 'earl-bury-compile-buffer-if-successful)
 
 ;;********************************
@@ -5117,24 +5119,23 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
           (setq earl-xref-find-definitions-other-window-var t)
           (if (= (count-windows) 1)
               (progn
+                (if (get-buffer "*xref*") (kill-buffer "*xref*"))
                 (split-window-horizontally)
-                (xref--show-xrefs xrefs display-action) ;; IMPORTANT xrefs must be valid
-                (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
-                    (progn (switch-to-prev-buffer) (switch-to-buffer-other-window "*xref*"))))
-            (xref--show-xrefs xrefs display-action))) ;; IMPORTANT xrefs must be valid
+                (xref--show-xrefs xrefs display-action))
+            (xref--show-xrefs xrefs display-action)))
       (progn
         (setq earl-xref-find-definitions-other-window-var nil)
         (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
             (if (= (count-windows) 1)
                 (progn
                   (split-window-horizontally)
-                  (xref--show-xrefs xrefs display-action) ;; IMPORTANT xrefs must be valid
+                  (xref--show-xrefs xrefs display-action)
                   (delete-other-windows))
               (progn
-                (xref--show-xrefs xrefs display-action) ;; IMPORTANT xrefs must be valid
+                (xref--show-xrefs xrefs display-action)
                 (switch-to-prev-buffer)
                 (switch-to-buffer-other-window "*xref*")))
-          (xref--show-xrefs xrefs display-action)))))) ;; IMPORTANT xrefs must be valid
+          (xref--show-xrefs xrefs display-action))))))
 
 (define-key evil-normal-state-map "`" 'imenu)
 (define-key evil-normal-state-map "F" 'xref-find-definitions)                     ;; find-tag
