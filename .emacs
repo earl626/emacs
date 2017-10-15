@@ -1649,6 +1649,14 @@ See both toggle-frame-maximized and its following if statement."
 
 ;;;**************************************************************
 ;;;
+;;; Use lockfiles to avoid editing collisions
+;;;
+;;;**************************************************************
+
+(setq create-lockfiles nil) ;; Turned Off
+
+;;;**************************************************************
+;;;
 ;;; Custom-set-variables, Backups, Version Control, Auto Save
 ;;;
 ;;;**************************************************************
