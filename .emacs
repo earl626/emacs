@@ -438,11 +438,11 @@
 
 (setq earl-font-list (list "Liberation Mono" "Verdana" "Arial" "Open Sans"
                            "DejaVu Sans Mono" "Source Code Pro" "Nimbus Mono"
-                           "Ubuntu Mono" "Consolas" "Inconsolata" "Cousine"))
+                           "Ubuntu Mono" "Inconsolata" "Consolas" "Cousine"))
 ;; (setq earl-font-list-sizes (list "-9.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-10" "-10"))
-(setq earl-font-list-sizes (list "-9.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-10" "-8"))
+(setq earl-font-list-sizes (list "-11.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-11" "-11.5"))
 (setq earl-last-font-index 10)
-(setq earl-default-font 10)
+(setq earl-default-font 9)
 (setq earl-current-font earl-default-font)
 
 (defun earl-current-font ()
@@ -1129,8 +1129,8 @@ See both toggle-frame-maximized and its following if statement."
   (setq earl-color-keyword earl-color-sol-red) ;; earl-color-sol-orange
   (setq earl-color-emphasized earl-color-sol-base03) ;; earl-color-sol-base03, earl-color-sol-base02
   (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-background "#ffffff") ;; earl-color-sol-base3, "#ffffff"
-  (setq earl-color-hl-line earl-color-background) ;; earl-color-sol-base3, earl-color-sol-base2, "#ffffff", earl-color-background
+  (setq earl-color-background earl-color-sol-base3) ;; earl-color-sol-base3, "#ffffff"
+  (setq earl-color-hl-line "#ffffff") ;; earl-color-sol-base3, earl-color-sol-base2, "#ffffff", earl-color-background
   (setq earl-color-todo earl-color-sol-red)
   (setq earl-color-study earl-color-sol-blue) ;; earl-color-sol-yellow
   (setq earl-color-important earl-color-sol-red) ;; earl-color-sol-magenta
@@ -3135,6 +3135,11 @@ doc string for `insert-for-yank-1', which see."
 ;;                                 end-of-buffer)))
 ;;     (command-error-default-function data context caller)))
 ;; (setq command-error-function #'earl-command-error-function)
+
+;; NOTE(earl): Fixing a performance bug that I have not noticed before
+;; When holding down 'k' (next-line) emacs starts to lag while moving
+;; the cursor downwards. This fixes that to some extent
+(setq auto-window-vscroll nil)
 
 ;;**************************************************************
 ;;
