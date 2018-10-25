@@ -1123,14 +1123,14 @@ See both toggle-frame-maximized and its following if statement."
   ;; Color variables
   ;; -------------------------------
   (setq earl-color-text earl-color-sol-base02) ;; earl-color-sol-base02, earl-color-sol-base01
-  (setq earl-color-comment earl-color-sol-base00) ;; earl-color-sol-base00, earl-color-sol-base0
+  (setq earl-color-comment earl-color-sol-base01) ;; earl-color-sol-base00, earl-color-sol-base0
   (setq earl-color-type earl-color-sol-blue)
   (setq earl-color-string earl-color-sol-green)
   (setq earl-color-keyword earl-color-sol-red) ;; earl-color-sol-orange
   (setq earl-color-emphasized earl-color-sol-base03) ;; earl-color-sol-base03, earl-color-sol-base02
   (setq earl-color-cursor earl-color-emphasized)
-  (setq earl-color-background earl-color-sol-base3) ;; earl-color-sol-base3, "#ffffff"
-  (setq earl-color-hl-line "#ffffff") ;; earl-color-sol-base3, earl-color-sol-base2, "#ffffff", earl-color-background
+  (setq earl-color-background "#ffffff") ;; earl-color-sol-base3, "#ffffff"
+  (setq earl-color-hl-line earl-color-sol-base3) ;; earl-color-sol-base3, earl-color-sol-base2, "#ffffff", earl-color-background
   (setq earl-color-todo earl-color-sol-red)
   (setq earl-color-study earl-color-sol-blue) ;; earl-color-sol-yellow
   (setq earl-color-important earl-color-sol-red) ;; earl-color-sol-magenta
@@ -2863,7 +2863,7 @@ killed."
 ;;
 ;;**************************************************************
 
-(defun casey-never-split-a-window
+(defun casey-never-split-a-window ()
     "Never, ever split a window. Why would anyone EVER want you to do that??"
   nil)
 
