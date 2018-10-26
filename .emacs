@@ -2442,6 +2442,23 @@ the current position of point, then move it to the beginning of the line."
   (unless (eq (window-end) (point-max))
     (scroll-up n)))
 
+;;------------------------------------
+;;
+;; Vertical Scrolling
+;;
+;;------------------------------------
+
+;;; Scroll one line at a time (less "jumpy" than defaults)
+(setq mouse-wheel-scroll-amount '(15 ((shift) . 1)))       ;; eight lines at a time
+(setq mouse-wheel-progressive-speed nil)                   ;; don't accelerate scrolling
+(setq mouse-wheel-follow-mouse 't)                         ;; scroll window under mouse
+(setq scroll-step 1)                                       ;; keyboard smooth scroll
+
+;; NOTE(earl): Fixing a performance bug that I have not noticed before
+;; When holding down 'k' (next-line) emacs starts to lag while moving
+;; the cursor downwards. This fixes that to some extent
+(setq auto-window-vscroll nil)
+
 ;;------------------------
 ;;
 ;; Horizontal scrolling
@@ -2967,9 +2984,6 @@ killed."
 ;;; Changes which window is in focus
 ;; (other-window 2)
 
-;;; Smooth scroll
-(setq scroll-step 3)
-
 ;;; Display Clock
 (display-time)
 
@@ -3094,12 +3108,6 @@ doc string for `insert-for-yank-1', which see."
 ;; Disable startup message
 (setq inhibit-startup-message t)
 
-;;; Scroll one line at a time (less "jumpy" than defaults)
-(setq mouse-wheel-scroll-amount '(15 ((shift) . 1)))       ;; eight lines at a time
-(setq mouse-wheel-progressive-speed nil)                   ;; don't accelerate scrolling
-(setq mouse-wheel-follow-mouse 't)                         ;; scroll window under mouse
-(setq scroll-step 1)                                       ;; keyboard scroll one line at a time
-
 ;;; Stop Emacs from losing undo information by
 ;;; setting very high limits for undo buffers
 (setq undo-limit 20000000)
@@ -3136,11 +3144,6 @@ doc string for `insert-for-yank-1', which see."
 ;;                                 end-of-buffer)))
 ;;     (command-error-default-function data context caller)))
 ;; (setq command-error-function #'earl-command-error-function)
-
-;; NOTE(earl): Fixing a performance bug that I have not noticed before
-;; When holding down 'k' (next-line) emacs starts to lag while moving
-;; the cursor downwards. This fixes that to some extent
-(setq auto-window-vscroll nil)
 
 ;;**************************************************************
 ;;
@@ -4734,6 +4737,58 @@ is called as a function to find the defun's end."
   (define-key evil-normal-state-local-map "Z" 'kill-this-buffer)
   )
 (add-hook 'dired-mode-hook 'earl-dired-mode-hook)
+
+;;**************************************************************
+;;
+;; Benchmarking, Profiling
+;;
+;;**************************************************************
+
+;; Benchmark package is autoloaded
+;; usage: (benchmark 100 (form (to be evaluated)))
+
+;; Benchmark is good at overall tests,
+;; but if you’re having performance problems
+;; it doesn’t tell you which functions are causing the problem.
+;; For that, you have the (also built-in) profiler.
+
+;;     Start it with M-x profiler-start.
+;;     Pick between processor usage, memory usage, or both.
+;;     Do some time consuming operations.
+;;     Stop it with M-x profiler-stop
+;;     Get the report with M-x profiler-report.
+
+(evil-define-key 'normal profiler-report-mode-map (kbd "RET") 'profiler-report-expand-entry)
+(evil-define-key 'insert profiler-report-mode-map (kbd "RET") 'profiler-report-expand-entry)
+
+;; In addition to @Malabara's answer, I tend to use a custom-made with-timer macro to permanently instrument various parts of my code (e.g my init.el file).
+;; The difference is that while benchmark allows to study the performance of a specific bit of code that you instrument,
+;; with-timer always gives you the time spent in each instrumented part of the code (without much overhead for sufficiently large parts),
+;; which gives you the input to know which part should be investigated further.
+
+(defmacro with-timer (title &rest forms)
+  "Run the given FORMS, counting the elapsed time.
+A message including the given TITLE and the corresponding elapsed
+time is displayed."
+  (declare (indent 1))
+  (let ((nowvar (make-symbol "now"))
+        (body   `(progn ,@forms)))
+    `(let ((,nowvar (current-time)))
+       (message "%s..." ,title)
+       (prog1 ,body
+         (let ((elapsed
+                (float-time (time-subtract (current-time) ,nowvar))))
+           (message "%s... done (%.3fs)" ,title elapsed))))))
+
+;; ;; Usage example:
+;; (with-timer "Doing things"
+;;   (form (to (be evaluated))))
+
+;; ----------------------
+;; Emacs Startup Profiler
+;; ----------------------
+
+;; Emacs records the total init time. You can show it with the command emacs-init-time
 
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
