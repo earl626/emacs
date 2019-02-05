@@ -1622,7 +1622,7 @@ See both toggle-frame-maximized and its following if statement."
   ;; (maximize-frame)
   
   ;; ;; Fullscreen
-  ;; (toggle-frame-fullscreen) ;; Makes Emacs fullscreen (F11), (toggle-frame-maximized), (maximize-frame)
+  (toggle-frame-fullscreen) ;; Makes Emacs fullscreen (F11), (toggle-frame-maximized), (maximize-frame)
   
   ;;; Default Theme
   (funcall (nth earl-default-theme earl-theme-list))
@@ -1630,6 +1630,9 @@ See both toggle-frame-maximized and its following if statement."
   ;;; Default Font
   ;; NOTE(earl): Pay attention to this if something weird starts happening to the frame size; see the earl-next-font function
   (earl-determine-default-font)
+  
+  ;; Override theme stuff
+  (load-theme 'zenburn t)
   )
 (add-hook 'window-setup-hook 'post-load-stuff t)
 
@@ -5022,23 +5025,24 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;;             Profiling reveals it's the lambda that is the problem.
 ;;             Have to optimize emacs's c source code to fix...
 ;;             (or it might be this specific emacs version...)
-;; (define-key evil-normal-state-map "p" (lambda () (interactive) (scroll-down 4)))
-;; (define-key evil-normal-state-map ";" (lambda () (interactive) (scroll-up 4)))
-;; (define-key evil-normal-state-map "P" (lambda () (interactive) (scroll-down 24)))
-;; (define-key evil-normal-state-map ":" (lambda () (interactive) (scroll-up 24)))
+(define-key evil-normal-state-map "p" (lambda () (interactive) (scroll-down 4)))
+(define-key evil-normal-state-map ";" (lambda () (interactive) (scroll-up 4)))
+(define-key evil-normal-state-map "P" (lambda () (interactive) (scroll-down 24)))
+(define-key evil-normal-state-map ":" (lambda () (interactive) (scroll-up 24)))
 
-;; Can't get emacs to fucking compile...
-;; Fuck it, this shit seem to work without lag
-;; ---------------------------------------------------------------------------------------------------
-(defun earl-when-frame-size-changed (frame)
-  (setq next-screen-context-lines (/ (* (window-total-height) 18) 20)))
-(add-hook 'window-size-change-functions 'earl-when-frame-size-changed)
+;; ;; Can't get emacs to fucking compile...
+;; ;; Fuck it, this shit seem to work without lag
+;; ;; Or not...
+;; ;; ---------------------------------------------------------------------------------------------------
+;; (defun earl-when-frame-size-changed (frame)
+;;   (setq next-screen-context-lines (/ (* (window-total-height) 18) 20)))
+;; (add-hook 'window-size-change-functions 'earl-when-frame-size-changed)
 
-(define-key evil-normal-state-map "p" 'scroll-down)
-(define-key evil-normal-state-map ";" 'scroll-up)
-(define-key evil-normal-state-map "P" 'scroll-down)
-(define-key evil-normal-state-map ":" 'scroll-up)
-;; ---------------------------------------------------------------------------------------------------
+;; (define-key evil-normal-state-map "p" 'scroll-down)
+;; (define-key evil-normal-state-map ";" 'scroll-up)
+;; (define-key evil-normal-state-map "P" 'scroll-down)
+;; (define-key evil-normal-state-map ":" 'scroll-up)
+;; ;; ---------------------------------------------------------------------------------------------------
 
 (setq hscroll-margin 1) ; NOTE(earl): This one gets set further down in the emacs section
 ;; (setq hscroll-step 50) ; controls how many columns to scroll the window when point too close to edge, default = center point
