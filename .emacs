@@ -588,8 +588,6 @@ See both toggle-frame-maximized and its following if statement."
 (setq-default mode-line-format '("%e" mode-line-front-space mode-line-mule-info mode-line-client mode-line-modified mode-line-remote mode-line-frame-identification mode-line-buffer-identification "   " mode-line-position evil-mode-line-tag
                                  (vc-mode vc-mode)
                                  "  " mode-line-modes mode-line-misc-info mode-line-end-spaces "   %f"))
-(setq earl-mode-line-color (cons (face-background 'mode-line) (face-foreground 'mode-line)))
-(setq earl-mode-line-inactive-color (cons (face-background 'mode-line-inactive) (face-foreground 'mode-line-inactive)))
 (setq earl-mode-line-compilation-in-progress-color '("#268bd2" . "#ffffff"))
 (setq earl-mode-line-compilation-succsess-color '("#859900" . "#ffffff"))
 (setq earl-mode-line-compilation-error-color '("#dc322f" . "#ffffff"))
@@ -638,10 +636,6 @@ See both toggle-frame-maximized and its following if statement."
 ;; NOTE(earl): Configure internal or/and external border (fringe) [default ON]
 ;; (fringe-mode) ; USE THIS ONE - check documentation!
 ;; (set-fringe-mode 0) ; turn off, overrides fringe-mode
-
-;;; NOTE(earl): Fullscreen
-(custom-set-variables
- '(initial-frame-alist (quote ((fullscreen . maximized)))))       ; Makes Emacs big window
 
 ;;****************************
 ;;
@@ -1698,7 +1692,9 @@ See both toggle-frame-maximized and its following if statement."
  '(mouse-wheel-follow-mouse nil)
  '(mouse-wheel-progressive-speed nil)
  '(mouse-wheel-scroll-amount (quote (15)))
- '(version-control nil))
+ '(version-control nil)
+ ;; '(initial-frame-alist (quote ((fullscreen . maximized)))) ;; Emacs Maximized (don't think this one is necessary)
+ )
 
 ;; ;; If auto save is enabled and anything happens, you can recover a file with "M-x recover-file"
 
@@ -1761,6 +1757,11 @@ See both toggle-frame-maximized and its following if statement."
   "Make the current build."
   (interactive)
   (save-some-buffers 1)
+  
+  ;; Remember the mode-line-color
+  (setq earl-mode-line-color (cons (face-background 'mode-line) (face-foreground 'mode-line)))
+  (setq earl-mode-line-inactive-color (cons (face-background 'mode-line-inactive) (face-foreground 'mode-line-inactive)))
+  
   (if (find-project-directory) (compile casey-makescript))
   (if (eq earl-close-compile-buffer-automatically t)
       (progn (switch-to-prev-buffer) (other-window 1)
