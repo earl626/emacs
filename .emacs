@@ -442,7 +442,7 @@
 ;; (setq earl-font-list-sizes (list "-9.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-10" "-10"))
 (setq earl-font-list-sizes (list "-11.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-11" "-11.5"))
 (setq earl-last-font-index 10)
-(setq earl-default-font 9)
+(setq earl-default-font 0)
 (setq earl-current-font earl-default-font)
 
 (defun earl-current-font ()
@@ -710,6 +710,8 @@ See both toggle-frame-maximized and its following if statement."
 ;;
 ;;-------------------------------------------------------------------------------------------------------------
 
+;; what-cursor-position with a prefix argument shows the face under point, among other information. (universal-argument + what-cursor-position = info)
+
 (defun earl-set-light-sol-background ()
   "Light sol background"
   (interactive)
@@ -798,6 +800,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-background-color earl-color-background)
   (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
   (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
@@ -873,6 +876,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-background-color earl-color-background)
   (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
   (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
@@ -947,6 +951,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-background-color earl-color-background)
   (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
   (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
@@ -1020,6 +1025,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-background-color earl-color-background)
   (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
   (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
@@ -1097,6 +1103,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
@@ -1122,7 +1129,7 @@ See both toggle-frame-maximized and its following if statement."
   
   ;; Color variables
   ;; -------------------------------
-  (setq earl-color-text earl-color-sol-base02) ;; earl-color-sol-base02, earl-color-sol-base01
+  (setq earl-color-text "#292929") ;; earl-color-sol-base02, earl-color-sol-base01, "#292929"
   (setq earl-color-comment earl-color-sol-base01) ;; earl-color-sol-base00, earl-color-sol-base0
   (setq earl-color-type earl-color-sol-blue)
   (setq earl-color-string earl-color-sol-green)
@@ -1180,6 +1187,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
@@ -1256,6 +1264,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
@@ -1328,6 +1337,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-face-attribute 'font-lock-type-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
@@ -1401,6 +1411,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-face-attribute 'font-lock-type-face nil :foreground earl-color-type)
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   (set-face-attribute 'font-lock-preprocessor-face nil :foreground earl-color-keyword)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
@@ -1481,6 +1492,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-background-color earl-color-background)
   (set-face-background 'fringe earl-color-background)
   (set-cursor-color earl-color-cursor)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (modify-face 'font-lock-fixme-face earl-color-todo nil nil t nil t nil nil)
   (modify-face 'font-lock-study-face earl-color-study nil nil t nil t nil nil)
@@ -1559,6 +1571,7 @@ See both toggle-frame-maximized and its following if statement."
   (set-face-attribute 'font-lock-variable-name-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :foreground earl-color-text)
   ;; (set-face-attribute 'font-lock-warning-face nil :weight 'medium)
+  (set-face-foreground 'shadow earl-color-comment)
   
   (set-foreground-color earl-color-text)
   (set-background-color earl-color-background)
@@ -1631,7 +1644,7 @@ See both toggle-frame-maximized and its following if statement."
   ;; NOTE(earl): Pay attention to this if something weird starts happening to the frame size; see the earl-next-font function
   (earl-determine-default-font)
   
-  ;; Override theme stuff
+  ;; Override theme stuff with proper themes
   (load-theme 'zenburn t)
   )
 (add-hook 'window-setup-hook 'post-load-stuff t)
@@ -4793,6 +4806,30 @@ time is displayed."
 
 ;; Emacs records the total init time. You can show it with the command emacs-init-time
 
+;;**************************************************************
+;;
+;; Emacs Packages
+;;
+;;**************************************************************
+
+(evil-define-key 'normal package-menu-mode-map (kbd "C-S-i") 'package-menu-mark-install)
+(evil-define-key 'normal package-menu-mode-map (kbd "C-S-x") 'package-menu-execute)
+
+;;**************************************************************
+;;
+;; Emacs Keymaps
+;;
+;;**************************************************************
+
+;; M-x describe-bindings
+;; Lists all the bindings currently available, use isearch, occur, etc. to make good use of this list.
+
+;; M-x describe-prefix-map
+;; This shows all the bindings available from the current mode, you can use the display buffer as you would any other readonly Emacs buffer, for example you can search freely for strings etc.
+
+;; M-x describe-mode
+;; As well as giving you general info about the current mode, it will also list all the key bindings available.
+
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
 ;;                                                     Evil Mode
@@ -5108,6 +5145,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "Q" 'insert-file)
 (define-key evil-normal-state-map "a" 'other-window)
 (define-key evil-normal-state-map "Z" 'kill-this-buffer)
+(define-key evil-normal-state-map (kbd "C-x Z") 'delete-file-and-buffer)
 (define-key evil-normal-state-map (kbd "C-¬") 'save-buffers-kill-terminal) ;; C-x C-c
 (define-key evil-normal-state-map "|" 'delete-other-windows) ;; delete-other-windows, delete-window
 
