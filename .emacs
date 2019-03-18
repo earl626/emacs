@@ -438,11 +438,13 @@
 
 (setq earl-font-list (list "Liberation Mono" "Verdana" "Arial" "Open Sans"
                            "DejaVu Sans Mono" "Source Code Pro" "Nimbus Mono"
-                           "Ubuntu Mono" "Inconsolata" "Consolas" "Cousine"))
+                           "Ubuntu Mono" "Inconsolata" "Consolas" "Cousine"
+                           "Times New Roman"))
 ;; (setq earl-font-list-sizes (list "-9.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-10" "-10"))
-(setq earl-font-list-sizes (list "-11.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-11" "-11.5"))
-(setq earl-last-font-index 10)
-(setq earl-default-font 0)
+;; (setq earl-font-list-sizes (list "-11.5" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-11" "-11.5"))
+(setq earl-font-list-sizes (list "-21" "-10" "-12" "-9" "-10" "-10" "-10" "-10" "-10" "-21" "-21" "-21"))
+(setq earl-last-font-index 11)
+(setq earl-default-font 9)
 (setq earl-current-font earl-default-font)
 
 (defun earl-current-font ()
