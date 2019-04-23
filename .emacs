@@ -3815,6 +3815,7 @@ is called as a function to find the defun's end."
   (setq tab-width 4
         indent-tabs-mode nil)
   
+  (define-key evil-insert-state-local-map "\"" 'self-insert-command)
   (setq earl-close-compile-buffer-automatically t)
   (setq earl-close-compile-buffer-automatically-ignore-errors t)
   )
