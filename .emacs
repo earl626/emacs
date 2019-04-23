@@ -1929,6 +1929,9 @@ See both toggle-frame-maximized and its following if statement."
 ;; Set this to "t" or "nil" depending on whether or not you want to automatically close the compile buffer
 (setq earl-close-compile-buffer-automatically t)
 
+;; Set this to "t" or "nil" depending on whether or not you want to close the compile buffer even after encountering errors
+(setq-default earl-close-compile-buffer-automatically-ignore-errors nil)
+
 ;; Set this to "t" or "nil" depending on whether or not you want to automatically close the compile buffer with a delay
 (setq earl-close-compile-buffer-with-delay nil)
 
@@ -1959,6 +1962,17 @@ See both toggle-frame-maximized and its following if statement."
     (progn
       (setq earl-close-compile-buffer-automatically t)
       (message "Closing compile buffer automatically"))))
+
+(defun earl-close-compile-buffer-automatically-ignore-errors ()
+  "Toggle whether or not to close the compile buffer automatically even after encountering errors"
+  (interactive)
+  (if (eq earl-close-compile-buffer-automatically-ignore-errors t)
+      (progn
+        (setq earl-close-compile-buffer-automatically-ignore-errors nil)
+        (message "Not Ignoring Errors"))
+    (progn
+      (setq earl-close-compile-buffer-automatically-ignore-errors t)
+      (message "Ignoring Errors"))))
 
 (defun earl-close-compile-buffer-with-delay ()
   "Toggle whether or not to close the compile buffer with delay when successful without warnings"
@@ -2014,11 +2028,14 @@ See both toggle-frame-maximized and its following if statement."
                      (let ((compilation-window (get-buffer-window buffer)))
                        (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
                          (kill-buffer buffer))))))
-        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
-               (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
-               (if (= (count-windows) 1) (split-window-horizontally))
-               (switch-to-buffer-other-window "*compilation*")
-               (other-window 1)))
+        (progn
+          (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
+          (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
+          (if (not (eq earl-close-compile-buffer-automatically-ignore-errors t))
+              (progn
+                (if (= (count-windows) 1) (split-window-horizontally))
+                (switch-to-buffer-other-window "*compilation*")
+                (other-window 1)))))
     (if (earl-compilation-successfull buffer string)
         (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
                (if (= (count-windows) 1) (switch-to-buffer "*compilation*")))
@@ -3787,6 +3804,22 @@ is called as a function to find the defun's end."
                                  "  " mode-line-modes mode-line-misc-info mode-line-end-spaces "   %f")))
 
 (add-hook 'emacs-lisp-mode-hook 'earl-emacs-lisp-mode-hook)
+
+;;**************************************************************
+;;
+;; Latex Mode
+;;
+;;**************************************************************
+
+(defun earl-latex-mode-hook ()
+  (setq tab-width 4
+        indent-tabs-mode nil)
+  
+  (setq earl-close-compile-buffer-automatically t)
+  (setq earl-close-compile-buffer-automatically-ignore-errors t)
+  )
+
+(add-hook 'latex-mode-hook 'earl-latex-mode-hook)
 
 ;;**************************************************************
 ;;
