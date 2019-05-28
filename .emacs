@@ -602,7 +602,7 @@
                                     "-10"
                                     "-10"
                                     "-10"
-                                    "-10"
+                                    "-11.5"
                                     "-11"
                                     "-11.5"))
 (setq earl-last-font-index 11)
@@ -4706,13 +4706,46 @@ is called as a function to find the defun's end."
 ;;
 ;;**************************************************************
 
+;; Anaconda Mode
+
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+
+;; PYTHONPATH
+;; You can add your project to the Emacs PYTHONPATH. If you store project dependencies somewhere on your machine, you can add them as well.
+
+;; (add-to-list 'python-shell-extra-pythonpaths "/path/to/the/project")
+;; (add-to-list 'python-shell-extra-pythonpaths "/path/to/the/dependency")
+
+;; Virtual environment
+;; Use a virtual environment to isolate your project dependencies from others on the system. You can additionally install your project in an editable mode in the virtual environment. This will improve search functionality. Then activate this virtual environment inside Emacs.
+
+;; M-x pythonic-activate RET /path/to/virtualenv RET
+;; Also you can use pyenv-mode or similar package to hold virtual environment in actual state.
+
+;; Each action above applies to anaconda-mode immediately. The next anaconda-mode command you call will use this environment for search completion candidates.
+
+;; My own shit
+
 (defun earl-python-mode-hook ()
   (setq tab-width 4
         indent-tabs-mode nil)
   
   (setq earl-close-compile-buffer-automatically nil)
   (setq earl-build-tags-file-after-successful-compilation nil)
-  (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point))
+  (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point)
+  
+  (define-key evil-insert-state-map "   " 'anaconda-mode-complete)
+  (define-key evil-insert-state-map "\t"    'anaconda-mode-complete)
+  (define-key evil-normal-state-map "F"     'anaconda-mode-find-definitions)
+  (define-key evil-normal-state-map "G"     'anaconda-mode-find-definitions-other-window)
+  (define-key evil-normal-state-map "$"     'anaconda-mode-find-assignments)
+  (define-key evil-normal-state-map "%"     'anaconda-mode-find-assignments-other-window)
+  (define-key evil-normal-state-map "\""    'anaconda-mode-find-references)
+  (define-key evil-normal-state-map "£"     'anaconda-mode-find-references-other-window)
+  (define-key evil-normal-state-map "X"     'xref-pop-marker-stack)
+  (define-key evil-normal-state-map "\M-?"  'anaconda-mode-show-doc)
+  )
 
 (add-hook 'python-mode-hook 'earl-python-mode-hook)
 
