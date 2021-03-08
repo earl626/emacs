@@ -164,7 +164,9 @@
 ;; (require 'key-chord)
 ;; (key-chord-mode 1)
 
-(require 'cl)
+(require 'cl-lib)
+;; (require 'cl) ;; deprecated
+
 (require 'ido)
 (require 'xref)
 
@@ -5097,11 +5099,14 @@ time is displayed."
 ;;
 ;;************************************************
 
-;; Make horizontal movement cross lines
+;; Whether horizontal motions may move to other lines.
 (setq-default evil-cross-lines t)
 
-;; Move cursor back when it reaches eol
+;; Whether the cursor is moved backwards when exiting insert state
 (setq evil-move-cursor-back nil)
+
+;; Whether the cursor can move past the end of the line.
+(setq evil-move-beyond-eol t)
 
 ;;************************************************
 ;;
