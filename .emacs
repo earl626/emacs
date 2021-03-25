@@ -115,6 +115,18 @@
 (require 'evil)
 (evil-mode 1)
 
+;; Require Undo Tree
+(require 'undo-tree)
+(global-undo-tree-mode)
+
+;; Byte-compiling undo-tree.el is recommended (e.g. using "M-x byte-compile-file" from within emacs)
+(if (not (file-exists-p "~/.emacs.d/elpa/undo-tree-0.7.5/undo-tree.elc"))
+    (if (file-exists-p "~/.emacs.d/elpa/undo-tree-0.7.5/undo-tree.el")
+        (progn
+          (byte-compile-file "~/.emacs.d/elpa/undo-tree-0.7.5/undo-tree.el" t)
+          (message "Completed byte-compile of 'undo-tree.el' See '~.emacs' for further info"))
+      (message "Can't find '~/.emacs.d/elpa/undo-tree-0.7.5/undo-tree.el' Byte-compiling undo-tree.el is recommended")))
+
 ;;***************************************
 ;;
 ;; Org-Mode, OrgMode, Org Mode
