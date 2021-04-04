@@ -2760,7 +2760,7 @@ the current position of point, then move it to the beginning of the line."
       (progn
         (previous-line) 
         (if (earl-current-line-empty)
-            (progn (loop do (previous-line) while (looking-at "[[:space:]]*$")) (goto-char (match-beginning 0)))
+            (progn (cl-loop do (previous-line) while (looking-at "[[:space:]]*$")) (goto-char (match-beginning 0)))
           (earl-goto-previous-blank-line)))
     (earl-goto-previous-blank-line)))
 
@@ -2773,7 +2773,7 @@ the current position of point, then move it to the beginning of the line."
       (progn
         (next-line) 
         (if (earl-current-line-empty)
-            (progn (loop do (next-line) while (looking-at "[[:space:]]*$")) (goto-char (match-beginning 0)))
+            (progn (cl-loop do (next-line) while (looking-at "[[:space:]]*$")) (goto-char (match-beginning 0)))
           (earl-goto-next-blank-line)))
     (earl-goto-next-blank-line)))
 
@@ -5368,9 +5368,11 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "D" 'query-replace)
 (define-key evil-normal-state-map "s" 'isearch-forward)
 (define-key evil-normal-state-map "S" 'isearch-backward) ;; isearch-forward-regexp
-(define-key isearch-mode-map "\t" 'isearch-repeat-forward)
-(define-key isearch-mode-map [S-tab] 'isearch-repeat-backward)
-(define-key isearch-mode-map [return] 'earl-isearch-exit-recenter)
+(define-key isearch-mode-map "\t"            'isearch-repeat-forward)
+(define-key isearch-mode-map [S-tab]         'isearch-repeat-backward)
+(define-key isearch-mode-map [S-iso-lefttab] 'isearch-repeat-backward)
+(define-key isearch-mode-map [backtab]       'isearch-repeat-backward)
+(define-key isearch-mode-map [return]        'earl-isearch-exit-recenter)
 
 (eval-after-load "isearch"
   '(define-key isearch-mode-map (kbd "C-<tab>") 'isearch-dabbrev-expand))
@@ -6002,3 +6004,17 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (global-set-key (kbd "C-c C-f") 'term)
 (global-set-key (kbd "C-c d") 'eshell)
 (global-set-key (kbd "C-c C-d") 'eshell)
+
+;;-------------------------------------------------------------------------------------------------------------
+;;
+;; Norwegian characters on linux machine
+;;
+;;-------------------------------------------------------------------------------------------------------------
+
+(global-set-key (kbd "M-'") (lambda () (interactive) (insert "æ")))
+(global-set-key (kbd "M-;") (lambda () (interactive) (insert "ø")))
+(global-set-key (kbd "M-[") (lambda () (interactive) (insert "å")))
+
+(global-set-key (kbd "M-@") (lambda () (interactive) (insert "Æ")))
+(global-set-key (kbd "M-:") (lambda () (interactive) (insert "Ø")))
+(global-set-key (kbd "M-{") (lambda () (interactive) (insert "Å")))
