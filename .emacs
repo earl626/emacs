@@ -5107,6 +5107,20 @@ time is displayed."
 
 (setq gdb-many-windows t)
 
+;;**************************************************************
+;;
+;; Faces
+;;
+;;**************************************************************
+
+;; describe-char
+
+(defun what-face (pos)
+  (interactive "d")
+  (let ((face (or (get-char-property (pos) 'read-face-name)
+                  (get-char-property (pos) 'face))))
+    (if face (message "Face: %s" face) (message "No face at %d" pos))))
+
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
 ;;                                                     Evil Mode
