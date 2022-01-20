@@ -4224,7 +4224,7 @@ is called as a function to find the defun's end."
               ;; Second shell command, creates the tags-file
               (earl-start-process-shell-command
                'emacs-earl-ctags-process 'emacs-earl-ctags-process-name 'emacs-earl-ctags-buffer-name
-               '(lambda () (interactive) "ctags -e -L - --c++-kinds=+p --fields=+iaS --extra=+q")
+               '(lambda () (interactive) "ctags -e -R -L - --c++-kinds=+p --fields=+iaS --extras=+q")
                (point-min) (point) 'emacs-earl-ctags-timer
                'earl-handle-ctags-output))
           (earl-print-buffer-to-messages "Something went wrong when listing the projects dependencies for generating the tags file (check messages)"))))
@@ -4340,14 +4340,14 @@ is called as a function to find the defun's end."
 ;;     # ./ctags_with_dep.sh file1.c file2.c ... to generate a tags file for these files.
 ;;     gcc -M $* | sed -e 's/[\\ ]/\n/g' | \
 ;;     sed -e '/^$/d' -e '/\.o:[ \t]*$/d' | \
-;;     ctags -L - --c++-kinds=+p --fields=+iaS --extra=+q
+;;     ctags -L - --c++-kinds=+p --fields=+iaS --extras=+q
 ;; Alternatively you could possibly use "#!/bin/sh" instead of "#!/bin/bash"?
 ;; What if you have other directories besides the standard /usr/include that containing the header files you need?
 ;; You could do a little modification on this script. For example, you have some header files in ~/include,
 ;; then you could pass -I ~/include to the gcc command. Just like below:
 ;;     gcc -M -I ~/include $* | sed -e 's/[\\ ]/\n/g' | \
 ;;     sed -e '/^$/d' -e '/\.o:[ \t]*$/d' | \
-;;     ctags -L - --c++-kinds=+p --fields=+iaS --extra=+q
+;;     ctags -L - --c++-kinds=+p --fields=+iaS --extras=+q
 ;; gcc and g++ options:
 ;; -llibrary - Search the library named library when linking.
 ;; It makes a difference where in the command you write this option; the linker searches processes libraries
@@ -4384,7 +4384,7 @@ is called as a function to find the defun's end."
               ;; Second shell command, creates the tags-file
               (earl-start-process-shell-command
                'emacs-earl-ctags-process 'emacs-earl-ctags-process-name 'emacs-earl-ctags-buffer-name
-               '(lambda () (interactive) "ctags -e -L - --c++-kinds=+p --fields=+iaS --extra=+q")
+               '(lambda () (interactive) "ctags -e -R -L - --c++-kinds=+p --fields=+iaS --extras=+q")
                (point-min) (point-max) 'emacs-earl-ctags-timer
                'earl-handle-ctags-output))
           (earl-print-buffer-to-messages "Something went wrong when listing the projects dependencies for generating the tags file (check messages)"))))
@@ -4487,7 +4487,7 @@ is called as a function to find the defun's end."
 (defun earl-start-simple-tag-file-process ()
   (earl-start-process-shell-command
    'earl-update-simple-tag-file-process 'earl-update-simple-tag-file-process-name 'earl-update-simple-tag-file-buffer-name
-   '(lambda () (interactive) "ctags -e -R * --c++-kinds=+p --fields=+iaS --extra=+q *.cpp *.hpp *.c *.h")
+   '(lambda () (interactive) "ctags -e -R * --c++-kinds=+p --fields=+iaS --extras=+q *.cpp *.hpp *.c *.h")
    nil nil 'earl-update-simple-tag-file-timer
    'earl-handle-ctags-output))
 
@@ -5450,116 +5450,53 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
 ;;*****************************************
 ;;
-;; ETags, CTags, CScope
+;; XREF Config
 ;;
 ;;*****************************************
 
-(setq earl-xref-find-definitions-other-window-var nil)
-
-(defun earl-xref-goto-xref ()
-  (interactive)
-  (if earl-xref-find-definitions-other-window-var
-      (progn
-        (other-window 1)                                            ;; Move away from xrefs window
-        (let ((previous-buffer-point (point))                       ;; Store that window point
-              (previous-buffer (current-buffer)))                   ;; Store that window
-          (other-window 1)                                          ;; Move back to xrefs window
-          (xref-goto-xref)
-          (let ((result-point (point))
-                (result (current-buffer)))
-            (switch-to-buffer previous-buffer)
-            (goto-char previous-buffer-point)
-            (switch-to-buffer-other-window result)
-            (goto-char result-point))))
-    (if (= (count-windows) 1)
-        (progn
-          (split-window-horizontally)
-          (xref-goto-xref)
-          (switch-to-buffer-other-window (current-buffer))
-          (delete-other-windows))
-      (progn
-        (other-window 1)
-        (let ((other-previous-buffer-point (point))
-              (other-previous-buffer (current-buffer)))
-          (other-window 1)
-          (xref-goto-xref)
-          (let ((result (current-buffer)))
-            (switch-to-buffer other-previous-buffer)
-            (switch-to-buffer-other-window result)
-            (other-window 1) (goto-char other-previous-buffer-point) (other-window 1)))))))
-
-(defun earl-xref--read-identifier (prompt)
-  "Return the identifier read from the minibuffer."
+(defun earl-xref-retry-with-prompt (display-action)
   (let* ((backend (xref-find-backend))
-         (id (xref-backend-identifier-at-point backend)))
-    (completing-read (if id
-                         (format "%s (default %s): "
-                                 (substring prompt 0 (string-match
-                                                      "[ :]+\\'" prompt))
-                                 id)
-                       prompt)
-                     (xref-backend-identifier-completion-table backend)
-                     nil nil nil
-                     'xref--read-identifier-history id)))
-
-(defun earl-get-xrefs-argument (identifier)
-  "Without this function xref-find-definitions will search for identifier at point, and when that identifier
-   is something nonsensical - like '00000' - the user will have to move point to a blank space in order to
-   to call xref-find-definitions again and get prompted for a definition. Whatever is at point is blindly sent
-   into the system, and thus the user must move the point in order to get prompted for input.
-   This function solves this by forcing a read from buffer and having xref--find-definitions
-   continuously call it untill a proper identifier is returned by prompting the user."
-  (interactive (list (earl-xref--read-identifier "Find definitions of: ")))
-  (funcall (intern (format "xref-backend-%s" 'definitions))
-           (xref-find-backend)
-           identifier))
+         (prompt "Find definitions of: ")
+         (def nil)
+         (id
+          (completing-read
+           (if def
+               (format "%s (default %s): "
+                       (substring prompt 0 (string-match
+                                            "[ :]+\\'" prompt))
+                       def)
+             prompt)
+           (xref-backend-identifier-completion-table backend)
+           nil nil nil
+           'xref--read-identifier-history def)))
+    (if (equal id "")
+        (or def (user-error "There is no default identifier"))
+      (condition-case nil
+          (xref--show-defs
+           (xref--create-fetcher id 'definitions id)
+           display-action)
+        (error (earl-xref-retry-with-prompt display-action))))))
 
 (defun xref--find-definitions (id display-action)
-  "    Used by xref-find-definitions, xref-find-definitions-other-window and xref-find-definitions-other-frame
-    IMPORTANT(earl):
-       This function is rewritten in my .emacs file. NB! This could cause trouble!
-    I rewrote this function because I wanted to change the behaviour of xref when trying to find a definition (xref-find-definitions)
-    and xref returning multiple possible matches back in a buffer called xref. The xref buffer would display and
-    consquently hide one of my buffers and then stay there even when it had helped me find what I was looking for.
-    I wanted it to hide automatically by itself. Another annoyance was that finding a definition in another window
-    would open in the current window when multiple matches prompted the xref buffer. The xref buffer would pop up
-    in the other window and stay there. I wanted to streamline this so I wouldn't have to manually correct
-    which buffers were displaying.
-       A simple solution to this would be to add simple window commands to when I selected a match in the xref buffer (earl-xref-goto-xref).
-    These window commands would take care of everything I would need to do manually. This system would need to
-    know in what window to display the definition i chose, so I created a simple global variable to keep track of this.
-    Now I only needed to tweak xref-find-definitions and xref-find-definitions-other-window in such a way that they
-    would set this global variable when called uppon. This however changed their behaviour, and I still don't understand
-    why. To me it seems like I've come across some sort of bug, but statistically speaking it's probably me.
-    I will point out though that i coppied the original functions word by word - only changing the name
-    of these functions to include the prefix 'earl-' (indicating my functions) - and that was enough to change
-    the behaviour. I have no explanation for this."
-  (let ((xrefs (funcall (intern (format "xref-backend-%s" 'definitions)) ;; (if (cdr xrefs) == If multiple definitions found (opens a xref buffer)
-                        (xref-find-backend)
-                        id)))
-    (while (not xrefs) (setq xrefs (call-interactively 'earl-get-xrefs-argument))) ;; NOTE xrefs must be valid
-    (if display-action
-        (progn
-          (setq earl-xref-find-definitions-other-window-var t)
-          (if (= (count-windows) 1)
-              (progn
-                (if (get-buffer "*xref*") (kill-buffer "*xref*"))
-                (split-window-horizontally)
-                (xref--show-xrefs xrefs display-action))
-            (xref--show-xrefs xrefs display-action)))
-      (progn
-        (setq earl-xref-find-definitions-other-window-var nil)
-        (if (cdr xrefs) ;; If multiple definitions found (opens a xref buffer)
-            (if (= (count-windows) 1)
-                (progn
-                  (split-window-horizontally)
-                  (xref--show-xrefs xrefs display-action)
-                  (delete-other-windows))
-              (progn
-                (xref--show-xrefs xrefs display-action)
-                (switch-to-prev-buffer)
-                (switch-to-buffer-other-window "*xref*")))
-          (xref--show-xrefs xrefs display-action))))))
+  "When the point is near a word xref will use that word.
+   If that word has no match xref will not find anything.
+   Xref will not ask for user input.
+   User will have to move point away from words to get prompted for input.
+   This is annoying when user wants to supply input.
+
+   This redefining of xref--find-definitions solves that annoyance"
+  
+  ;; NOTE(earl):
+  ;;             As far as I can tell xref--show-defs
+  ;;             returns nil when a single match is found
+  ;;             returns not nil when multiple matches are found
+  ;;             signals error when no match is found
+  
+  (condition-case nil                                       ;; Catch ALL (I think)
+      (xref--show-defs
+       (xref--create-fetcher id 'definitions id)            ;; Try to Execute
+       display-action)
+    (error (earl-xref-retry-with-prompt display-action))))  ;; Error Handler
 
 (define-key evil-normal-state-map "`" 'imenu)
 (define-key evil-normal-state-map "F" 'xref-find-definitions)                     ;; find-tag
@@ -5568,7 +5505,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "%" 'tags-query-replace)                        ;; tags-query-replace, xref-query-replace-in-results
 (define-key evil-normal-state-map "X" 'xref-pop-marker-stack)                     ;; pop-tag-mark
 (define-key evil-normal-state-map "£" 'xref-find-references)
-(define-key xref--button-map [return] 'earl-xref-goto-xref)
+(define-key xref--button-map [return] (lambda () (interactive) (xref-goto-xref t)))
 
 ;; (define-key evil-normal-state-map "\"" (lambda () (interactive)
 ;;                                          (let ((current-prefix-arg 4))            ;; emulate C-u
