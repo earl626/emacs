@@ -5382,7 +5382,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
 ;;************************
 ;;
-;; Replace, Search
+;; Replace, Search, ido-mode
 ;;
 ;;************************
 
@@ -5398,6 +5398,8 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
 (eval-after-load "isearch"
   '(define-key isearch-mode-map (kbd "C-<tab>") 'isearch-dabbrev-expand))
+
+(define-key ido-common-completion-map [backtab] 'ido-next-match)
 
 ;;********************************
 ;;
@@ -5536,12 +5538,14 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
 (define-key evil-normal-state-map "x" 'evil-ex)
 ;; (define-key evil-normal-state-map "x" 'execute-extended-command)
-(define-key evil-normal-state-map " " 'set-mark-command)
+(define-key evil-normal-state-map " " 'set-mark-command) ;; set-mark-command, push-mark-command
+(define-key evil-normal-state-map "\"" 'View-back-to-mark) ;; pop-global-mark, pop-to-mark-command
 (define-key evil-normal-state-map "\r" 'newline)
 (define-key evil-normal-state-map "/" 'undo-tree-undo)
 (define-key evil-normal-state-map "?" 'undo-tree-redo)
 (define-key evil-normal-state-map "A" 'comment-or-uncomment-region)
 (define-key evil-normal-state-map "@" 'exchange-point-and-mark)
+(define-key evil-normal-state-map "0" 'c-fill-paragraph)
 (define-key evil-normal-state-map ")" 'goto-line)
 
 ;; no screwing with my middle mouse button
