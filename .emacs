@@ -127,6 +127,9 @@
           (message "Completed byte-compile of 'undo-tree.el' See '~.emacs' for further info"))
       (message "Can't find '~/.emacs.d/elpa/undo-tree-0.8.2/undo-tree.el' Byte-compiling undo-tree.el is recommended")))
 
+;; Disable Auto Save History
+(setq undo-tree-auto-save-history nil)
+
 ;;***************************************
 ;;
 ;; Org-Mode, OrgMode, Org Mode
@@ -5120,6 +5123,33 @@ time is displayed."
   (let ((face (or (get-char-property (pos) 'read-face-name)
                   (get-char-property (pos) 'face))))
     (if face (message "Face: %s" face) (message "No face at %d" pos))))
+
+;;**************************************************************
+;;
+;; Flutter, dart-mode, lsp-mode
+;;
+;;**************************************************************
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+;; (package-initialize)
+
+(setq package-selected-packages 
+  '(dart-mode lsp-mode lsp-dart lsp-treemacs flycheck company
+    ;; Optional packages
+    lsp-ui company hover))
+
+(when (cl-find-if-not #'package-installed-p package-selected-packages)
+  (package-refresh-contents)
+  (mapc #'package-install package-selected-packages))
+
+(add-hook 'dart-mode-hook 'lsp)
+
+(setq gc-cons-threshold (* 100 1024 1024)
+      read-process-output-max (* 1024 1024)
+      company-minimum-prefix-length 1
+      lsp-lens-enable t
+      lsp-signature-auto-activate nil)
 
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
