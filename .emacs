@@ -1939,9 +1939,24 @@ See both toggle-frame-maximized and its following if statement."
   (interactive)
   (save-some-buffers 1)
   
-  ;; Remember the mode-line-color
-  (setq earl-mode-line-color (cons (face-background 'mode-line) (face-foreground 'mode-line)))
-  (setq earl-mode-line-inactive-color (cons (face-background 'mode-line-inactive) (face-foreground 'mode-line-inactive)))
+  (if (not
+       (or
+        (string= (face-background 'mode-line) (car earl-mode-line-compilation-in-progress-color))
+        (string= (face-foreground 'mode-line) (cdr earl-mode-line-compilation-in-progress-color))
+        (string= (face-background 'mode-line) (car earl-mode-line-compilation-succsess-color))
+        (string= (face-foreground 'mode-line) (cdr earl-mode-line-compilation-succsess-color))
+        (string= (face-background 'mode-line) (car earl-mode-line-compilation-error-color))
+        (string= (face-foreground 'mode-line) (cdr earl-mode-line-compilation-error-color))
+        
+        (string= (face-background 'mode-line-inactive) (car earl-mode-line-compilation-in-progress-color))
+        (string= (face-foreground 'mode-line-inactive) (cdr earl-mode-line-compilation-in-progress-color))
+        (string= (face-background 'mode-line-inactive) (car earl-mode-line-compilation-succsess-color))
+        (string= (face-foreground 'mode-line-inactive) (cdr earl-mode-line-compilation-succsess-color))
+        (string= (face-background 'mode-line-inactive) (car earl-mode-line-compilation-error-color))
+        (string= (face-foreground 'mode-line-inactive) (cdr earl-mode-line-compilation-error-color))))
+      (progn ;; Remember the mode-line-color
+        (setq earl-mode-line-color (cons (face-background 'mode-line) (face-foreground 'mode-line)))
+        (setq earl-mode-line-inactive-color (cons (face-background 'mode-line-inactive) (face-foreground 'mode-line-inactive)))))
   
   (if (find-project-directory) (compile casey-makescript))
   (if (eq earl-close-compile-buffer-automatically t)
