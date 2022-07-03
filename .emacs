@@ -2097,7 +2097,26 @@ See both toggle-frame-maximized and its following if statement."
                   (progn (split-window-horizontally)
                          (switch-to-buffer-other-window "*compilation*")
                          (other-window 1))))))))
+
+(defun earl-grep-remove-tags-matches (buffer string)
+  "Remove tag matches from grep results"
+  (and
+   (string-match "*grep*" (buffer-name buffer))
+   (string-match "finished" string)
+   (with-current-buffer buffer
+     (goto-char (point-min))
+     (read-only-mode)
+     (let ((done-searching nil))
+       (while (not done-searching)
+         (if (search-forward-regexp "^TAGS:" nil t)
+             (progn
+               (beginning-of-line)
+               (delete-line 1))
+           (setq done-searching t))))
+     (read-only-mode))))
+
 (add-hook 'compilation-finish-functions 'earl-bury-compile-buffer-if-successful)
+(add-hook 'compilation-finish-functions 'earl-grep-remove-tags-matches)
 
 ;;********************************
 ;;
