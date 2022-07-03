@@ -2043,7 +2043,7 @@ See both toggle-frame-maximized and its following if statement."
 
 (defun earl-compilation-successfull (buffer string)
   (and
-   (string-match "compilation" (buffer-name buffer))
+   (string-match "*compilation*" (buffer-name buffer))
    (string-match "finished" string)
    (with-current-buffer buffer
      (goto-char (point-min))
@@ -2061,40 +2061,42 @@ See both toggle-frame-maximized and its following if statement."
 ;; Close compilation buffer if finished with no errors
 (defun earl-bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings"
-  (if (eq earl-close-compile-buffer-automatically t)
-      (if (earl-compilation-successfull buffer string)
-          (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
-                 ;; (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-succsess-color earl-mode-line-inactive-color 1)
-                 (if (eq earl-close-compile-buffer-with-delay t)
-                     (run-with-timer 1 nil
-                                     (lambda (buf)
-                                       (bury-buffer buf)
-                                       (let ((compilation-window (get-buffer-window buf)))
-                                         (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
-                                           (kill-buffer buf))))
-                                     buffer)
-                   (progn
-                     (bury-buffer buffer)
-                     (let ((compilation-window (get-buffer-window buffer)))
-                       (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
-                         (kill-buffer buffer))))))
-        (progn
-          (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
-          (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
-          (if (not (eq earl-close-compile-buffer-automatically-ignore-errors t))
-              (progn
-                (if (= (count-windows) 1) (split-window-horizontally))
-                (switch-to-buffer-other-window "*compilation*")
-                (other-window 1)))))
-    (if (earl-compilation-successfull buffer string)
-        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
-               (if (= (count-windows) 1) (switch-to-buffer "*compilation*")))
-      (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
-             (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
-             (if (= (count-windows) 1)
-                 (progn (split-window-horizontally)
-                        (switch-to-buffer-other-window "*compilation*")
-                        (other-window 1)))))))
+  (and
+   (string-match "*compilation*" (buffer-name buffer))
+   (if (eq earl-close-compile-buffer-automatically t)
+       (if (earl-compilation-successfull buffer string)
+           (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
+                  ;; (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-succsess-color earl-mode-line-inactive-color 1)
+                  (if (eq earl-close-compile-buffer-with-delay t)
+                      (run-with-timer 1 nil
+                                      (lambda (buf)
+                                        (bury-buffer buf)
+                                        (let ((compilation-window (get-buffer-window buf)))
+                                          (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
+                                            (kill-buffer buf))))
+                                      buffer)
+                    (progn
+                      (bury-buffer buffer)
+                      (let ((compilation-window (get-buffer-window buffer)))
+                        (if compilation-window (switch-to-prev-buffer compilation-window 'kill)
+                          (kill-buffer buffer))))))
+         (progn
+           (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
+           (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
+           (if (not (eq earl-close-compile-buffer-automatically-ignore-errors t))
+               (progn
+                 (if (= (count-windows) 1) (split-window-horizontally))
+                 (switch-to-buffer-other-window "*compilation*")
+                 (other-window 1)))))
+     (if (earl-compilation-successfull buffer string)
+         (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
+                (if (= (count-windows) 1) (switch-to-buffer "*compilation*")))
+       (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
+              (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
+              (if (= (count-windows) 1)
+                  (progn (split-window-horizontally)
+                         (switch-to-buffer-other-window "*compilation*")
+                         (other-window 1))))))))
 (add-hook 'compilation-finish-functions 'earl-bury-compile-buffer-if-successful)
 
 ;;********************************
