@@ -3138,8 +3138,7 @@ killed."
 (defun earl-split-window-sensibly (&optional window)
   (let ((window (or window (selected-window))))
     (if (= (count-windows) 1)
-        (or (and (window-splittable-p window t)
-                 ;; Split window horizontally.
+        (or (and t ;; (window-splittable-p window t)
                  (with-selected-window window
                    (split-window-right)))
             (and (eq window (frame-root-window (window-frame window)))
@@ -3148,9 +3147,10 @@ killed."
                  ;; minibuffer window, try to split it horizontally disregarding
                  ;; the value of `split-width-threshold'.
                  (let ((split-width-threshold 0))
-                   (when (window-splittable-p window)
+                   (when t ;; (when (window-splittable-p window)
                      (with-selected-window window
-                       (split-window-right)))))))))
+                       (split-window-right))))))
+      (or window (selected-window)))))
 
 ;; split-window-preferred-function default value is split-window-sensibly
 ;; You can control the behavior of split-window-sensibly by adjusting the variables
