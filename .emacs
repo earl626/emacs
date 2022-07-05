@@ -2108,7 +2108,7 @@ See both toggle-frame-maximized and its following if statement."
      (read-only-mode)
      (let ((done-searching nil))
        (while (not done-searching)
-         (if (search-forward-regexp "^TAGS:" nil t)
+         (if (search-forward-regexp "\\(^TAGS:\\|^remedybg.rdbg:\\)" nil t)
              (progn
                (beginning-of-line)
                (delete-line 1))
