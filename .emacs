@@ -5485,14 +5485,23 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "h" 'delete-char)
 (define-key evil-normal-state-map "H" 'delete-word) ;; kill-word
 (define-key evil-normal-state-map "n" 'delete-line) ;; kill-line
-(define-key evil-normal-state-map "N" 'kill-rectangle) ;; delete-rectangle
 (define-key evil-normal-state-map "&" 'earl-yank-pop) ;; yank-pop, evil-paste-pop
 (define-key evil-normal-state-map "y" 'earl-yank) ;; yank, evil-paste-after, evil-paste-before
-(define-key evil-normal-state-map "Y" 'yank-rectangle)
 (define-key evil-normal-state-map "m" 'kill-region)
 (define-key evil-normal-state-map "M" 'kill-ring-save)
 (define-key evil-normal-state-map "#" 'earl-cut-expression)
 (define-key evil-normal-state-map "~" 'earl-copy-expression)
+
+;;********************************
+;;
+;; Rectangles
+;;
+;;********************************
+
+(define-key evil-normal-state-map "N" 'kill-rectangle) ;; delete-rectangle
+(define-key evil-normal-state-map "Y" 'yank-rectangle)
+(define-key evil-normal-state-map (kbd "M-Y") 'string-rectangle)
+(define-key evil-normal-state-map (kbd "M-^") 'string-insert-rectangle)
 
 ;;************************
 ;;
