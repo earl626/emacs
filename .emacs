@@ -1904,12 +1904,14 @@ See both toggle-frame-maximized and its following if statement."
       (cons '("^\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:fatal error\\|warnin\\(g\\)\\) C[0-9]+:" 2 3 nil (4))
             compilation-error-regexp-alist))
 
-(defun find-project-directory-recursive ()
+(defun find-project-directory-recursive (arg)
   "Recursively search for a makefile."
   (interactive)
-  (if (file-exists-p casey-makescript) t
-    (cd "../")
-    (find-project-directory-recursive)))
+  (if (<= arg 0)
+      nil
+    (if (file-exists-p casey-makescript) t
+      (cd "../")
+      (find-project-directory-recursive (- arg 1)))))
 
 (defun lock-compilation-directory ()
   "The compilation process should NOT hunt for a makefile"
@@ -1927,12 +1929,14 @@ See both toggle-frame-maximized and its following if statement."
   "Find the project directory."
   (interactive)
   (setq find-project-from-directory default-directory)
-  (if (= (count-windows) 1) (switch-to-buffer "*compilation*")
-    (switch-to-buffer-other-window "*compilation*"))
-  (if compilation-directory-locked (cd last-compilation-directory)
+  (if compilation-directory-locked
+      (cd last-compilation-directory)
     (cd find-project-from-directory)
-    (find-project-directory-recursive)
-    (setq last-compilation-directory default-directory)))
+    (if (find-project-directory-recursive 32)
+        (progn
+          (setq last-compilation-directory default-directory)
+          t)
+      nil)))
 
 (defun make-without-asking ()
   "Make the current build."
@@ -1958,13 +1962,17 @@ See both toggle-frame-maximized and its following if statement."
         (setq earl-mode-line-color (cons (face-background 'mode-line) (face-foreground 'mode-line)))
         (setq earl-mode-line-inactive-color (cons (face-background 'mode-line-inactive) (face-foreground 'mode-line-inactive)))))
   
-  (if (find-project-directory) (compile casey-makescript))
-  (if (eq earl-close-compile-buffer-automatically t)
-      (progn (switch-to-prev-buffer) (other-window 1)
-             (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
-    (progn
-      (if (= (count-windows) 1) (switch-to-prev-buffer) (other-window 1))
-      (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))))
+  (if (find-project-directory)
+      (let ((initial-window-count (count-windows)))
+        (compile casey-makescript)
+        (if (eq earl-close-compile-buffer-automatically t)
+            (if (= (count-windows) 1)
+                (switch-to-buffer nil)
+              (if (= initial-window-count 1)
+                  (delete-other-windows)
+                (progn (other-window 1) (switch-to-buffer nil) (other-window 1)))))
+        (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
+    (message "Couldn't find the makefile!")))
 
 (defun casey-big-fun-compilation-hook ()
   (make-local-variable 'truncate-lines)
@@ -2085,18 +2093,17 @@ See both toggle-frame-maximized and its following if statement."
            (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
            (if (not (eq earl-close-compile-buffer-automatically-ignore-errors t))
                (progn
-                 (if (= (count-windows) 1) (split-window-horizontally))
+                 ;; (if (= (count-windows) 1) (split-window-horizontally))
                  (switch-to-buffer-other-window "*compilation*")
                  (other-window 1)))))
      (if (earl-compilation-successfull buffer string)
          (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-succsess-color earl-mode-line-color 1)
-                (if (= (count-windows) 1) (switch-to-buffer "*compilation*")))
+                (switch-to-buffer-other-window "*compilation*")
+                (other-window 1))
        (progn (earl-change-mode-line-color-after-compilation 'mode-line earl-mode-line-compilation-error-color earl-mode-line-color 1)
               (earl-change-mode-line-color-after-compilation 'mode-line-inactive earl-mode-line-compilation-error-color earl-mode-line-inactive-color 1)
-              (if (= (count-windows) 1)
-                  (progn (split-window-horizontally)
-                         (switch-to-buffer-other-window "*compilation*")
-                         (other-window 1))))))))
+              (switch-to-buffer-other-window "*compilation*")
+              (other-window 1))))))
 
 (defun earl-grep-remove-tags-matches (buffer string)
   "Remove tag matches from grep results"
@@ -3132,32 +3139,29 @@ killed."
 ;;**************************************************************
 
 (defun casey-never-split-a-window ()
-    "Never, ever split a window. Why would anyone EVER want you to do that??"
+  "Never, ever split a window. Why would anyone EVER want you to do that??"
   nil)
 
 (defun earl-split-window-sensibly (&optional window)
   (let ((window (or window (selected-window))))
-    (if (= (count-windows) 1)
-        (or (and t ;; (window-splittable-p window t)
-                 (with-selected-window window
-                   (split-window-right)))
-            (and (eq window (frame-root-window (window-frame window)))
-                 (not (window-minibuffer-p window))
-                 ;; If WINDOW is the only window on its frame and is not the
-                 ;; minibuffer window, try to split it horizontally disregarding
-                 ;; the value of `split-width-threshold'.
-                 (let ((split-width-threshold 0))
-                   (when t ;; (when (window-splittable-p window)
-                     (with-selected-window window
-                       (split-window-right))))))
-      (or window (selected-window)))))
+    (or (and (> (count-windows) 1)
+             (let ((result-window (next-window)))
+               (with-selected-window window
+                 result-window)))
+        (and (window-splittable-p window t)
+	           (with-selected-window window
+	             (split-window-right)))
+        (let ((result-window (selected-window)))
+          (with-selected-window window
+            result-window)))))
 
 ;; split-window-preferred-function default value is split-window-sensibly
 ;; You can control the behavior of split-window-sensibly by adjusting the variables
 ;; split-width-threshold and split-height-threshold
-;; (setq split-width-threshold nil) ;;This tells display-buffer never to split windows horizontally
-(setq split-height-threshold nil) ;;This tells display-buffer never to split windows vertically
-(setq split-window-preferred-function 'earl-split-window-sensibly) ;; casey-never-split-a-window
+
+(setq split-width-threshold 160)
+(setq split-height-threshold nil) ;; nil tells display-buffer never to split
+(setq split-window-preferred-function 'earl-split-window-sensibly)
 
 ;; Display the *Completions* buffer in the inactive side window, not a new temporary window at the bottom
 (push '("\\*Completions\\*"
@@ -3194,13 +3198,12 @@ killed."
   (find-file-other-window filename wildcards))
 
 (defun earl-ido-switch-buffer-other-window ()
-  "Do 'ido-switch-buffer-other-window', if one window then delete frame and create window to display buffer"
   (interactive)
   (ido-switch-buffer-other-window)
   (if (= (count-windows) 1)
       (let ((result (current-buffer)))
-        (delete-frame)
         (split-window-horizontally)
+        (switch-to-buffer nil)
         (switch-to-buffer-other-window result))))
 
 (defun earl-ido-switch-buffer-other-window-old ()
@@ -3272,15 +3275,15 @@ See also the command `yank-pop' (\\[yank-pop])."
   (setq this-command t)
   (push-mark (point))
   (insert-for-yank (current-kill (cond
-				  ((listp arg) 0)
-				  ((eq arg '-) -2)
-				  (t (1- arg)))))
+				                          ((listp arg) 0)
+				                          ((eq arg '-) -2)
+				                          (t (1- arg)))))
   (if (consp arg)
       ;; This is like exchange-point-and-mark, but doesn't activate the mark.
       ;; It is cleaner to avoid activation, even though the command
       ;; loop would deactivate the mark because we inserted text.
       (goto-char (prog1 (mark t)
-		   (set-marker (mark-marker) (point) (current-buffer)))))
+		               (set-marker (mark-marker) (point) (current-buffer)))))
   ;; If we do get all the way thru, make this-command indicate that.
   (if (eq this-command t)
       (setq this-command 'yank))
@@ -3309,9 +3312,9 @@ doc string for `insert-for-yank-1', which see."
   (setq this-command 'yank)
   (unless arg (setq arg 1))
   (let ((inhibit-read-only t)
-	(before (< (point) (mark t))))
+	      (before (< (point) (mark t))))
     (if before
-	(funcall (or yank-undo-function 'delete-region) (point) (mark t))
+	      (funcall (or yank-undo-function 'delete-region) (point) (mark t))
       (funcall (or yank-undo-function 'delete-region) (mark t) (point)))
     (setq yank-undo-function nil)
     (set-marker (mark-marker) (point) (current-buffer))
@@ -3320,11 +3323,11 @@ doc string for `insert-for-yank-1', which see."
     ;; if possible.
     (set-window-start (selected-window) yank-window-start t)
     (if before
-	;; This is like exchange-point-and-mark, but doesn't activate the mark.
-	;; It is cleaner to avoid activation, even though the command
-	;; loop would deactivate the mark because we inserted text.
-	(goto-char (prog1 (mark t)
-		     (set-marker (mark-marker) (point) (current-buffer))))))
+	      ;; This is like exchange-point-and-mark, but doesn't activate the mark.
+	      ;; It is cleaner to avoid activation, even though the command
+	      ;; loop would deactivate the mark because we inserted text.
+	      (goto-char (prog1 (mark t)
+		                 (set-marker (mark-marker) (point) (current-buffer))))))
   nil)
 
 ;;**************************************************************
@@ -3597,9 +3600,9 @@ column to indent to; if it is nil, use one of the three methods above."
       (goto-char start)
       (or (bolp) (forward-line 1))
       (while (< (point) end)
-	(delete-region (point) (progn (skip-chars-forward " \t") (point)))
-	(or (eolp)
-	    (indent-to column 0))
+	      (delete-region (point) (progn (skip-chars-forward " \t") (point)))
+	      (or (eolp)
+	          (indent-to column 0))
         (forward-line 1))
       (move-marker end nil)))
    ;; If a fill-prefix is specified, use it.
@@ -3609,11 +3612,11 @@ column to indent to; if it is nil, use one of the three methods above."
       (setq end (point-marker))
       (goto-char start)
       (let ((regexp (regexp-quote fill-prefix)))
-	(while (< (point) end)
-	  (or (looking-at regexp)
-	      (and (bolp) (eolp))
-	      (insert fill-prefix))
-	  (forward-line 1)))))
+	      (while (< (point) end)
+	        (or (looking-at regexp)
+	            (and (bolp) (eolp))
+	            (insert fill-prefix))
+	        (forward-line 1)))))
    ;; Use indent-region-function is available.
    (indent-region-function
     (funcall indent-region-function start end))
@@ -3624,12 +3627,12 @@ column to indent to; if it is nil, use one of the three methods above."
       (setq end (copy-marker end))
       (goto-char start)
       (let ((pr (unless (minibufferp)
-		  (make-progress-reporter "Indenting region..." (point) end))))
-	(while (< (point) end)
+		              (make-progress-reporter "Indenting region..." (point) end))))
+	      (while (< (point) end)
           (indent-according-to-mode)
           (forward-line 1)
           (and pr (progress-reporter-update pr (point))))
-	(and pr (progress-reporter-done pr))
+	      (and pr (progress-reporter-done pr))
         (move-marker end nil)))))
   ;; In most cases, reindenting modifies the buffer, but it may also
   ;; leave it unmodified, in which case we have to deactivate the mark
@@ -3662,15 +3665,15 @@ is called as a function to find the defun's end."
   (if (or (null arg) (= arg 0)) (setq arg 1))
   (let ((pos (point))
         (beg (progn (end-of-line 1) (beginning-of-defun-raw 1) (point)))
-	(skip (lambda ()
-		;; When comparing point against pos, we want to consider that if
-		;; point was right after the end of the function, it's still
-		;; considered as "in that function".
-		;; E.g. `eval-defun' from right after the last close-paren.
-		(unless (bolp)
-		  (skip-chars-forward " \t")
-		  (if (looking-at "\\s<\\|\n")
-		      (forward-line 1))))))
+	      (skip (lambda ()
+		            ;; When comparing point against pos, we want to consider that if
+		            ;; point was right after the end of the function, it's still
+		            ;; considered as "in that function".
+		            ;; E.g. `eval-defun' from right after the last close-paren.
+		            (unless (bolp)
+		              (skip-chars-forward " \t")
+		              (if (looking-at "\\s<\\|\n")
+		                  (forward-line 1))))))
     (funcall end-of-defun-function)
     (funcall skip)
     (cond
@@ -3695,7 +3698,7 @@ is called as a function to find the defun's end."
         (goto-char beg))
       (unless (zerop arg)
         (beginning-of-defun-raw (- arg))
-	(setq beg (point))
+	      (setq beg (point))
         (funcall end-of-defun-function))))
     (funcall skip)
     (while (and (< arg 0) (>= (point) pos))
@@ -3704,10 +3707,10 @@ is called as a function to find the defun's end."
       (goto-char beg)
       (beginning-of-defun-raw (- arg))
       (if (>= (point) beg)
-	  (setq arg 0)
-	(setq beg (point))
+	        (setq arg 0)
+	      (setq beg (point))
         (funcall end-of-defun-function)
-	(funcall skip)))))
+	      (funcall skip)))))
 
 (defun earl-auto-indent-around-point ()
   "Automatic indentation of code around point"
@@ -5171,9 +5174,9 @@ time is displayed."
 ;; (package-initialize)
 
 (setq package-selected-packages 
-  '(dart-mode lsp-mode lsp-dart lsp-treemacs flycheck company
-    ;; Optional packages
-    lsp-ui company hover))
+      '(dart-mode lsp-mode lsp-dart lsp-treemacs flycheck company
+                  ;; Optional packages
+                  lsp-ui company hover))
 
 (when (cl-find-if-not #'package-installed-p package-selected-packages)
   (package-refresh-contents)
@@ -5508,10 +5511,17 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "q" 'write-file)
 (define-key evil-normal-state-map "Q" 'insert-file)
 (define-key evil-normal-state-map "a" 'other-window)
-(define-key evil-normal-state-map "Z" 'kill-this-buffer)
 (define-key evil-normal-state-map (kbd "C-x Z") 'delete-file-and-buffer)
 (define-key evil-normal-state-map (kbd "C-¬") 'save-buffers-kill-terminal) ;; C-x C-c
 (define-key evil-normal-state-map "|" 'delete-other-windows) ;; delete-other-windows, delete-window
+
+(defun earl-kill-this-buffer ()
+  (interactive)
+  (let ((buffer-to-kill (current-buffer)))
+    (switch-to-buffer nil)
+    (kill-buffer buffer-to-kill)))
+
+(define-key evil-normal-state-map "Z" 'earl-kill-this-buffer)
 
 ;; C-x C-z runs the command suspend-frame
 (global-unset-key (kbd "C-x C-z"))
@@ -5566,14 +5576,57 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
        display-action)
     (error (earl-xref-retry-with-prompt display-action))))  ;; Error Handler
 
+(setq earl-xref-window-count (count-windows)) ;; Window count at xref call
+(setq earl-xref-other-window nil)             ;; Last xref call was other window
+
+(defun xref--find-definitions (id display-action)
+  "Changing xref's window behaviour at initial call to xref.
+   For window behaviour concerning xref--button-map
+   see earl-xref-goto-xref"
+  (setq earl-xref-window-count (count-windows))
+  (if display-action
+      (progn
+        (setq earl-xref-other-window t)
+        (if (eq (count-windows) 1) (split-window-horizontally)))
+    (setq earl-xref-other-window nil))
+  (xref--show-defs
+   (xref--create-fetcher id 'definitions id)
+   display-action))
+
+(defun earl-xref-goto-xref ()
+  (interactive)
+  
+  (other-window 1)
+  (let ((previous-point-a (point))
+        (previous-buffer-a (current-buffer)))
+    (other-window 1)
+    
+    (switch-to-buffer nil)
+    (let ((previous-point-b (point))
+          (previous-buffer-b (current-buffer)))
+      (switch-to-buffer nil)
+      
+      (xref-goto-xref t)
+      
+      (if earl-xref-other-window
+          (if (eq (count-windows) 1)
+              (let ((result-point (point))
+                    (result-buffer (current-buffer)))
+                (switch-to-buffer previous-buffer-a)
+                (goto-char previous-point-a)
+                (split-window-horizontally)
+                (other-window 1)
+                (switch-to-buffer result-buffer)
+                (goto-char result-point)))))))
+
 (define-key evil-normal-state-map "`" 'imenu)
-(define-key evil-normal-state-map "F" 'xref-find-definitions)                     ;; find-tag
-(define-key evil-normal-state-map "G" 'xref-find-definitions-other-window)        ;; find-tag-other-window without moving point, view-tag-other-window
-(define-key evil-normal-state-map "$" 'xref-find-apropos)                         ;; tags-apropos
-(define-key evil-normal-state-map "%" 'tags-query-replace)                        ;; tags-query-replace, xref-query-replace-in-results
-(define-key evil-normal-state-map "X" 'xref-pop-marker-stack)                     ;; pop-tag-mark
+(define-key evil-normal-state-map "$" 'xref-find-apropos)
+(define-key evil-normal-state-map "%" 'tags-query-replace)
+(define-key evil-normal-state-map "X" 'xref-pop-marker-stack)
 (define-key evil-normal-state-map "£" 'xref-find-references)
-(define-key xref--button-map [return] (lambda () (interactive) (xref-goto-xref t)))
+(define-key evil-normal-state-map "F" 'xref-find-definitions)
+(define-key evil-normal-state-map "G" 'xref-find-definitions-other-window)
+(define-key xref--button-map [return] 'earl-xref-goto-xref)
 
 ;; (define-key evil-normal-state-map "\"" (lambda () (interactive)
 ;;                                          (let ((current-prefix-arg 4))            ;; emulate C-u
