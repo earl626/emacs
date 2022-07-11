@@ -1964,13 +1964,17 @@ See both toggle-frame-maximized and its following if statement."
   
   (if (find-project-directory)
       (let ((initial-window-count (count-windows)))
+        (other-window 1) (other-window 1) ;; Fixed a weird bug
         (compile casey-makescript)
         (if (eq earl-close-compile-buffer-automatically t)
             (if (= (count-windows) 1)
                 (switch-to-buffer nil)
               (if (= initial-window-count 1)
                   (delete-other-windows)
-                (progn (other-window 1) (switch-to-buffer nil) (other-window 1)))))
+                (progn
+                  (other-window 1)
+                  (switch-to-buffer nil)
+                  (other-window 1)))))
         (earl-set-face-background-and-foreground 'mode-line earl-mode-line-compilation-in-progress-color))
     (message "Couldn't find the makefile!")))
 
