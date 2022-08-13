@@ -5173,26 +5173,26 @@ time is displayed."
 ;;
 ;;**************************************************************
 
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-;; (package-initialize)
+;; (require 'package)
+;; (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+;; ;; (package-initialize)
 
-(setq package-selected-packages 
-      '(dart-mode lsp-mode lsp-dart lsp-treemacs flycheck company
-                  ;; Optional packages
-                  lsp-ui company hover))
+;; (setq package-selected-packages 
+;;       '(dart-mode lsp-mode lsp-dart lsp-treemacs flycheck company
+;;                   ;; Optional packages
+;;                   lsp-ui company hover))
 
-(when (cl-find-if-not #'package-installed-p package-selected-packages)
-  (package-refresh-contents)
-  (mapc #'package-install package-selected-packages))
+;; (when (cl-find-if-not #'package-installed-p package-selected-packages)
+;;   (package-refresh-contents)
+;;   (mapc #'package-install package-selected-packages))
 
-(add-hook 'dart-mode-hook 'lsp)
+;; (add-hook 'dart-mode-hook 'lsp)
 
-(setq gc-cons-threshold (* 100 1024 1024)
-      read-process-output-max (* 1024 1024)
-      company-minimum-prefix-length 1
-      lsp-lens-enable t
-      lsp-signature-auto-activate nil)
+;; (setq gc-cons-threshold (* 100 1024 1024)
+;;       read-process-output-max (* 1024 1024)
+;;       company-minimum-prefix-length 1
+;;       lsp-lens-enable t
+;;       lsp-signature-auto-activate nil)
 
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
