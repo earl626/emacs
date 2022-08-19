@@ -720,12 +720,12 @@ See both toggle-frame-maximized and its following if statement."
 (global-set-key (kbd "<M-S-mouse-3>") 'earl-set-comparison-font)
 (global-set-key (kbd "<M-S-mouse-1>") 'earl-compare-fonts)
 
-(global-set-key (kbd "<M-C-wheel-up>") '(lambda () (interactive) (text-scale-adjust 1)))
-(global-set-key (kbd "<M-C-wheel-down>") '(lambda () (interactive) (text-scale-adjust -1)))
-(global-set-key (kbd "<M-C-S-wheel-up>") '(lambda () (interactive) (text-scale-adjust 0.5)))
-(global-set-key (kbd "<M-C-S-wheel-down>") '(lambda () (interactive) (text-scale-adjust -0.5)))
-(global-set-key (kbd "<M-C-S-mouse-5>") '(lambda () (interactive) (text-scale-adjust 0)))
-(global-set-key (kbd "<M-C-mouse-5>") '(lambda () (interactive) (text-scale-adjust 0)))
+(global-set-key (kbd "<M-C-wheel-up>") (lambda () (interactive) (text-scale-adjust 1)))
+(global-set-key (kbd "<M-C-wheel-down>") (lambda () (interactive) (text-scale-adjust -1)))
+(global-set-key (kbd "<M-C-S-wheel-up>") (lambda () (interactive) (text-scale-adjust 0.5)))
+(global-set-key (kbd "<M-C-S-wheel-down>") (lambda () (interactive) (text-scale-adjust -0.5)))
+(global-set-key (kbd "<M-C-S-mouse-5>") (lambda () (interactive) (text-scale-adjust 0)))
+(global-set-key (kbd "<M-C-mouse-5>") (lambda () (interactive) (text-scale-adjust 0)))
 
 (setq earl-tiny-text-mode-toggle nil)
 
@@ -4241,8 +4241,8 @@ is called as a function to find the defun's end."
   (earl-start-process-shell-command
    'emacs-earl-determine-dependencies-process 'emacs-earl-determine-dependencies-process-name 'emacs-earl-determine-dependencies-buffer-name
    (if earl-ctags-library-files ;; not nil
-       '(lambda () (interactive) (concat (concat (concat "@FOR /F \"tokens=1,2,3,*\" %A IN ('cl /nologo /c \"" earl-ctags-source-files) "\" /Zs /showIncludes /I \"" earl-ctags-library-files) "\"') DO @IF NOT \"%D\"==\"\" echo %D"))
-     '(lambda () (interactive) (concat (concat "@FOR /F \"tokens=1,2,3,*\" %A IN ('cl /nologo /c \"" earl-ctags-source-files) "\" /Zs /showIncludes ') DO @IF NOT \"%D\"==\"\" echo %D")))
+       (lambda () (interactive) (concat (concat (concat "@FOR /F \"tokens=1,2,3,*\" %A IN ('cl /nologo /c \"" earl-ctags-source-files) "\" /Zs /showIncludes /I \"" earl-ctags-library-files) "\"') DO @IF NOT \"%D\"==\"\" echo %D"))
+     (lambda () (interactive) (concat (concat "@FOR /F \"tokens=1,2,3,*\" %A IN ('cl /nologo /c \"" earl-ctags-source-files) "\" /Zs /showIncludes ') DO @IF NOT \"%D\"==\"\" echo %D")))
    'nil 'nil 'emacs-earl-determine-dependencies-timer
    '(lambda (buffer-name process-name &optional directory-name) (interactive)
       (with-current-buffer buffer-name
@@ -4270,7 +4270,7 @@ is called as a function to find the defun's end."
               ;; Second shell command, creates the tags-file
               (earl-start-process-shell-command
                'emacs-earl-ctags-process 'emacs-earl-ctags-process-name 'emacs-earl-ctags-buffer-name
-               '(lambda () (interactive) "ctags -e -R -L - --c++-kinds=+p --fields=+iaS --extras=+q")
+               (lambda () (interactive) "ctags -e -R -L - --c++-kinds=+p --fields=+iaS --extras=+q")
                (point-min) (point) 'emacs-earl-ctags-timer
                'earl-handle-ctags-output))
           (earl-print-buffer-to-messages "Something went wrong when listing the projects dependencies for generating the tags file (check messages)"))))
@@ -4409,8 +4409,8 @@ is called as a function to find the defun's end."
   (earl-start-process-shell-command
    'emacs-earl-determine-dependencies-process 'emacs-earl-determine-dependencies-process-name 'emacs-earl-determine-dependencies-buffer-name
    (if (not (eq earl-ctags-library-files nil))
-       '(lambda () (interactive) (concat (concat (concat (concat earl-ctags-compiler " -M ") earl-ctags-source-files) " -L ") earl-ctags-library-files))
-     '(lambda () (interactive) (concat (concat earl-ctags-compiler " -M ") earl-ctags-source-files)))
+       (lambda () (interactive) (concat (concat (concat (concat earl-ctags-compiler " -M ") earl-ctags-source-files) " -L ") earl-ctags-library-files))
+     (lambda () (interactive) (concat (concat earl-ctags-compiler " -M ") earl-ctags-source-files)))
    'nil 'nil 'emacs-earl-determine-dependencies-timer
    '(lambda (buffer-name process-name &optional directory-name) (interactive)
       (with-current-buffer buffer-name
@@ -4430,7 +4430,7 @@ is called as a function to find the defun's end."
               ;; Second shell command, creates the tags-file
               (earl-start-process-shell-command
                'emacs-earl-ctags-process 'emacs-earl-ctags-process-name 'emacs-earl-ctags-buffer-name
-               '(lambda () (interactive) "ctags -e -R -L - --c++-kinds=+p --fields=+iaS --extras=+q")
+               (lambda () (interactive) "ctags -e -R -L - --c++-kinds=+p --fields=+iaS --extras=+q")
                (point-min) (point-max) 'emacs-earl-ctags-timer
                'earl-handle-ctags-output))
           (earl-print-buffer-to-messages "Something went wrong when listing the projects dependencies for generating the tags file (check messages)"))))
@@ -4533,7 +4533,7 @@ is called as a function to find the defun's end."
 (defun earl-start-simple-tag-file-process ()
   (earl-start-process-shell-command
    'earl-update-simple-tag-file-process 'earl-update-simple-tag-file-process-name 'earl-update-simple-tag-file-buffer-name
-   '(lambda () (interactive) "ctags -e -R * --c++-kinds=+p --fields=+iaS --extras=+q *.cpp *.hpp *.c *.h")
+   (lambda () (interactive) "ctags -e -R * --c++-kinds=+p --fields=+iaS --extras=+q *.cpp *.hpp *.c *.h")
    nil nil 'earl-update-simple-tag-file-timer
    'earl-handle-ctags-output))
 
@@ -5044,8 +5044,8 @@ is called as a function to find the defun's end."
   (define-key evil-normal-state-local-map "{" 'earl-beginning-of-defun)
   (define-key evil-normal-state-local-map "}" 'earl-end-of-defun)
   (define-key evil-normal-state-local-map "(" 'backward-up-list)
-  (define-key evil-normal-state-local-map "<" '(lambda () (interactive) (goto-char (point-min)))) ;; beginning-of-buffer
-  (define-key evil-normal-state-local-map ">" '(lambda () (interactive) (goto-char (point-max)))) ;; end-of-buffer
+  (define-key evil-normal-state-local-map "<" (lambda () (interactive) (goto-char (point-min)))) ;; beginning-of-buffer
+  (define-key evil-normal-state-local-map ">" (lambda () (interactive) (goto-char (point-max)))) ;; end-of-buffer
   
   (define-key evil-normal-state-local-map "a" 'other-window)
   (define-key evil-normal-state-local-map "Z" 'kill-this-buffer)
@@ -5416,8 +5416,8 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "{" 'earl-beginning-of-defun)
 (define-key evil-normal-state-map "}" 'earl-end-of-defun)
 (define-key evil-normal-state-map "(" 'backward-up-list)
-(define-key evil-normal-state-map "<" '(lambda () (interactive) (goto-char (point-min)))) ;; beginning-of-buffer
-(define-key evil-normal-state-map ">" '(lambda () (interactive) (goto-char (point-max)))) ;; end-of-buffer
+(define-key evil-normal-state-map "<" (lambda () (interactive) (goto-char (point-min)))) ;; beginning-of-buffer
+(define-key evil-normal-state-map ">" (lambda () (interactive) (goto-char (point-max)))) ;; end-of-buffer
 
 ;;************************
 ;;
