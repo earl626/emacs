@@ -1,4 +1,4 @@
-﻿
+
 ;;-------------------------------------------------------------------------------------------------------------
 ;;
 ;;                                           Earl's .emacs-configuration
@@ -4931,6 +4931,18 @@ is called as a function to find the defun's end."
   "Loads a project in current directory or one of the parent directories"
   (interactive)
   (earl-load-project-backend default-directory))
+
+;;**************************************************************
+;;
+;; Version Control, Source Control, Git
+;;
+;;**************************************************************
+
+;; Remove git from the list of backends handled by vc-mode
+(delete 'Git vc-handled-backends)
+
+;; Remove all source control hooks
+(setq vc-handled-backends ())
 
 ;;**************************************************************
 ;;
