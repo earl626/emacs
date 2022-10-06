@@ -3900,6 +3900,19 @@ is called as a function to find the defun's end."
 
 (add-hook 'latex-mode-hook 'earl-latex-mode-hook)
 
+;;
+;; Preview Pane
+;;
+
+;; To install latex-preview-pane, simply execute M-x package-install latex-preview-pane and restart Emacs.
+
+;; If you would like latex-preview-pane to load automatically with your LaTeX files,
+;; add the following to your .emacs:
+;; (latex-preview-pane-enable)
+
+;; Otherwise, you can enable it on a per-buffer basis with the command:
+;; M-x latex-preview-pane-mode
+
 ;;**************************************************************
 ;;
 ;; Compilation mode
