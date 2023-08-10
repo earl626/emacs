@@ -87,35 +87,44 @@
 
 (add-to-list 'load-path "~/.emacs.d/plugins")
 
-;;***************************************
 ;;
-;; Evil Mode
+;; Automatically install Emacs packages
 ;;
-;; https://www.emacswiki.org/emacs/Evil
-;; Quick Install
-;; Install using the latest version of Emacs and its builtin package system. Start with this in your .emacs:
-;;
-;;***************************************
 
+; list the packages you want
+(setq earl-package-list '(evil undo-tree adaptive-wrap latex-preview-pane zenburn-theme))
+
+; list the repositories containing them
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ("melpa" . "http://melpa.org/packages/")
+                         ))
+
+; activate all the packages (in particular autoloads)
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (package-initialize)
 
-;; Then:
-;;   M-x list-packages
-;;   C-s evil
-;; 
-;; Moving cursor over package name.
-;;   i
-;;   x
-;; i - mark for installation, x - to execute
-;; There should now be a folder named "elpa" in this folder "c:/Users/n06888/AppData/Roaming/.emacs.d/"
+; fetch the list of packages available 
+(unless package-archive-contents
+  (package-refresh-contents))
 
-;; Require Evil Mode
+; install the missing packages
+(dolist (package earl-package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
+
+;;
+;; Misc
+;;
+
 (require 'evil)
 (evil-mode 1)
 
-;; Require Undo Tree
+(require 'org)
+(setq org-log-done t)
+
+(require 'adaptive-wrap)
+
 (require 'undo-tree)
 (global-undo-tree-mode)
 
@@ -129,26 +138,6 @@
 
 ;; Disable Auto Save History
 (setq undo-tree-auto-save-history nil)
-
-;;***************************************
-;;
-;; Org-Mode, OrgMode, Org Mode
-;;
-;;***************************************
-
-(require 'org)
-(setq org-log-done t)
-
-;;***************************************
-;;
-;; Adaptive Wrap
-;;
-;;***************************************
-
-;; NOTE: This package resides in the elpa folder together with evil mode
-;;       ~/.emacs.d/elpa/
-;; Makes sure indented wraped lines stay indented
-(require 'adaptive-wrap)
 
 ;;***************************************
 ;;
@@ -2135,43 +2124,13 @@ See both toggle-frame-maximized and its following if statement."
 ;;
 ;;********************************
 
-;; Configures C-f to eval-last-sexp when in emacs-lisp-mode
-;; Use a hook for the mode. A hool will load your code whenever that mode is activated.
-;; A hook is a variable, its value is a list of function (lisp symbols or lambda)
-(defun commit-one-emacs-configuration ()
+(defun earl-commit-one-emacs-configuration ()
   "When in .emacs-configuration-file C-f should eval-last-sexp"
   (local-set-key (kbd "C-f") 'eval-last-sexp)
-  ;; (local-set-key (kbd "C-f") 'load-file)
-  ;; more here...
-  ) ;; closing paranthesis
+  (define-key evil-normal-state-local-map earl-compilation-key 'eval-last-sexp)
+  )
 
-;; add to hook
-;; the mode is named "emacs-lisp-mode" and its corresponding hook is named "emacs-lisp-mode-hook"
-(add-hook 'emacs-lisp-mode-hook 'commit-one-emacs-configuration)
-
-;;********************************
-;;
-;; End of Emacs key configuration
-;;
-;;********************************
-
-;;********************************
-;;
-;; Evil key configuration
-;;
-;;********************************
-
-(defun commit-one-emacs-configuration ()
-  "When in .emacs-configuration-file earl-compilation-key should eval-last-sexp"
-  (define-key evil-normal-state-local-map earl-compilation-key 'eval-last-sexp))
-
-(add-hook 'emacs-lisp-mode-hook 'commit-one-emacs-configuration)
-
-;;********************************
-;;
-;; End of Evil key configuration
-;;
-;;********************************
+(add-hook 'emacs-lisp-mode-hook 'earl-commit-one-emacs-configuration)
 
 ;;**************************************************************
 ;;
@@ -5764,7 +5723,6 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 (define-key isearch-mode-map [escape] 'isearch-abort)
 (define-key minibuffer-local-filename-completion-map [escape] 'abort-recursive-edit)
-(define-key minibuffer-local-filename-must-match-map [escape] 'abort-recursive-edit)
 (global-set-key [escape] 'keyboard-quit)
 
 ;;*****************************************
