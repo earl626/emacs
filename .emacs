@@ -4775,7 +4775,7 @@ is called as a function to find the defun's end."
   (define-key evil-normal-state-map "%"     'anaconda-mode-find-assignments-other-window)
   (define-key evil-normal-state-map "\""    'anaconda-mode-find-references)
   (define-key evil-normal-state-map "£"     'anaconda-mode-find-references-other-window)
-  (define-key evil-normal-state-map "X"     'xref-pop-marker-stack)
+  (define-key evil-normal-state-map "X"     'xref-go-back) ;; xref-pop-marker-stack
   (define-key evil-normal-state-map "\M-?"  'anaconda-mode-show-doc)
   )
 
@@ -5619,7 +5619,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (define-key evil-normal-state-map "`" 'imenu)
 (define-key evil-normal-state-map "$" 'xref-find-apropos)
 (define-key evil-normal-state-map "%" 'tags-query-replace)
-(define-key evil-normal-state-map "X" 'xref-pop-marker-stack)
+(define-key evil-normal-state-map "X" 'xref-go-back) ;; xref-pop-marker-stack
 (define-key evil-normal-state-map "£" 'xref-find-references)
 (define-key evil-normal-state-map "F" 'xref-find-definitions)
 (define-key evil-normal-state-map "G" 'xref-find-definitions-other-window)
