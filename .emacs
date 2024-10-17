@@ -92,7 +92,7 @@
 ;;
 
 ; list the packages you want
-(setq earl-package-list '(evil undo-tree adaptive-wrap latex-preview-pane zenburn-theme))
+(setq earl-package-list '(evil undo-tree adaptive-wrap latex-preview-pane zenburn-theme anaconda-mode))
 
 ; list the repositories containing them
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
@@ -4739,6 +4739,7 @@ is called as a function to find the defun's end."
 ;;**************************************************************
 
 ;; Anaconda Mode
+(require 'anaconda-mode)
 
 (add-hook 'python-mode-hook 'anaconda-mode)
 (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
