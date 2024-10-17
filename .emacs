@@ -4740,7 +4740,6 @@ is called as a function to find the defun's end."
 
 ;; Anaconda Mode
 (require 'anaconda-mode)
-
 (add-hook 'python-mode-hook 'anaconda-mode)
 (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 
@@ -4768,8 +4767,8 @@ is called as a function to find the defun's end."
   (setq earl-build-tags-file-after-successful-compilation nil)
   (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point)
   
-  (define-key evil-insert-state-map "   " 'anaconda-mode-complete)
-  (define-key evil-insert-state-map "\t"    'anaconda-mode-complete)
+  (define-key evil-insert-state-map "   " 'dabbrev-expand) ;; anaconda-mode-complete
+  (define-key evil-insert-state-map "\t"    'dabbrev-expand) ;; anaconda-mode-complete
   (define-key evil-normal-state-map "F"     'anaconda-mode-find-definitions)
   (define-key evil-normal-state-map "G"     'anaconda-mode-find-definitions-other-window)
   (define-key evil-normal-state-map "$"     'anaconda-mode-find-assignments)
