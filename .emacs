@@ -4765,7 +4765,7 @@ is called as a function to find the defun's end."
   
   (setq earl-close-compile-buffer-automatically nil)
   (setq earl-build-tags-file-after-successful-compilation nil)
-  (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point)
+  ;; (define-key evil-normal-state-local-map "*" 'earl-auto-indent-around-point)
   
   (define-key evil-insert-state-map "   " 'dabbrev-expand) ;; anaconda-mode-complete
   (define-key evil-insert-state-map "\t"    'dabbrev-expand) ;; anaconda-mode-complete
