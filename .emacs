@@ -1845,26 +1845,30 @@ See both toggle-frame-maximized and its following if statement."
 ;; Your init file should contain only one such instance.
 ;; If there is more than one, they won't work right.
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(auto-save-default nil)
  '(auto-save-interval 0)
  '(auto-save-list-file-prefix nil)
  '(auto-save-timeout 0)
  '(auto-show-mode t t)
+ '(backup-inhibited t t)
  '(delete-auto-save-files nil)
- '(delete-old-versions (quote other)) ;; delete-old-versions (quote other), delete-old-versions t
+ '(delete-old-versions 'other)
  '(imenu-auto-rescan t)
  '(imenu-auto-rescan-maxout 500000)
  '(kept-new-versions 5)
  '(kept-old-versions 5)
- '(make-backup-file-name-function (quote ignore))
+ '(make-backup-file-name-function 'ignore)
  '(make-backup-files nil)
- '(backup-inhibited t)
  '(mouse-wheel-follow-mouse nil)
  '(mouse-wheel-progressive-speed nil)
- '(mouse-wheel-scroll-amount (quote (15)))
- '(version-control nil)
- ;; '(initial-frame-alist (quote ((fullscreen . maximized)))) ;; Emacs Maximized (don't think this one is necessary)
- )
+ '(mouse-wheel-scroll-amount '(15))
+ '(package-selected-packages
+   '(anaconda-mode zenburn-theme latex-preview-pane adaptive-wrap undo-tree evil))
+ '(version-control nil))
 
 ;; ;; If auto save is enabled and anything happens, you can recover a file with "M-x recover-file"
 
@@ -6096,3 +6100,9 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 (global-set-key (kbd "M-@") (lambda () (interactive) (insert "Æ")))
 (global-set-key (kbd "M-:") (lambda () (interactive) (insert "Ø")))
 (global-set-key (kbd "M-{") (lambda () (interactive) (insert "Å")))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
